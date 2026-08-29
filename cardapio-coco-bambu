@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Cardápio na Ponta da Língua — Coco Bambu Flamboyant</title>
+<style>
+  :root{
+    --bg: #0b2b33;
+    --bg-2: #0e3640;
+    --card: #123f49;
+    --card-2: #163f4a;
+    --ink: #eef4f1;
+    --ink-dim: #a9c2bd;
+    --gold: #d8a441;
+    --gold-soft: #e8c37a;
+    --coral: #e85d4e;
+    --coral-soft: #f2988a;
+    --teal-line: #1c5561;
+    --ok: #6fb98f;
+    --radius: 14px;
+    font-family: 'Fraunces', Georgia, serif;
+  }
+  @font-face{
+    font-family:'Fraunces';
+    src: local('Georgia');
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink); }
+  body{
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at top left, rgba(216,164,65,0.10), transparent 45%),
+      radial-gradient(ellipse at bottom right, rgba(232,93,78,0.08), transparent 50%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+  }
+  .sans{ font-family: 'Avenir Next', 'Segoe UI', -apple-system, sans-serif; }
+  a{ color:inherit; }
+
+  header.top{
+    padding: 22px 18px 16px;
+    text-align:center;
+    border-bottom: 1px solid var(--teal-line);
+    position: sticky; top:0; z-index: 30;
+    background: rgba(11,43,51,0.92);
+    backdrop-filter: blur(6px);
+  }
+  header.top .eyebrow{
+    font-family:'Avenir Next','Segoe UI',sans-serif;
+    letter-spacing:3px; text-transform:uppercase; font-size:11px;
+    color: var(--gold-soft); margin-bottom:4px;
+  }
+  header.top h1{
+    margin:0; font-size: 22px; font-weight: 600; letter-spacing:0.3px;
+  }
+  header.top h1 .accent{ color: var(--gold); font-style: italic; }
+  .stats-strip{
+    display:flex; justify-content:center; gap:18px; margin-top:10px;
+    font-family:'Avenir Next','Segoe UI',sans-serif; font-size:12px; color:var(--ink-dim);
+  }
+  .stats-strip b{ color: var(--gold-soft); font-weight:700;}
+
+  nav.tabs{
+    display:flex; gap:6px; padding: 10px 12px; overflow-x:auto;
+    border-bottom:1px solid var(--teal-line);
+    position: sticky; top: 84px; z-index: 25;
+    background: rgba(11,43,51,0.92); backdrop-filter: blur(6px);
+    scrollbar-width: none;
+  }
+  nav.tabs::-webkit-scrollbar{ display:none; }
+  .tab-btn{
+    font-family:'Avenir Next','Segoe UI',sans-serif; font-size:13px; font-weight:600;
+    white-space:nowrap; padding: 8px 14px; border-radius: 100px; border:1px solid var(--teal-line);
+    background: transparent; color: var(--ink-dim); cursor:pointer;
+  }
+  .tab-btn.active{ background: var(--gold); color:#1a1206; border-color: var(--gold); }
+
+  main{ max-width: 640px; margin: 0 auto; padding: 16px 14px 60px; }
+
+  .search-row{ display:flex; gap:8px; margin-bottom:14px; }
+  .search-row input{
+    flex:1; padding: 11px 14px; border-radius: 100px; border:1px solid var(--teal-line);
+    background: var(--card); color: var(--ink); font-family:'Avenir Next','Segoe UI',sans-serif; font-size:14px;
+  }
+  .search-row input::placeholder{ color: var(--ink-dim); }
+
+  .section-divider{
+    display:flex; align-items:center; gap:10px; margin: 22px 0 12px;
+    font-family:'Avenir Next','Segoe UI',sans-serif; text-transform:uppercase; letter-spacing:2px;
+    font-size:11px; color: var(--gold-soft);
+  }
+  .section-divider::before, .section-divider::after{ content:''; flex:1; height:1px; background: var(--teal-line); }
+
+  .cat-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .cat-card{
+    background: linear-gradient(160deg, var(--card), var(--card-2));
+    border:1px solid var(--teal-line); border-radius: var(--radius);
+    padding: 14px; cursor:pointer; text-align:left;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .cat-card .num{ font-size:11px; color:var(--gold-soft); font-family:'Avenir Next','Segoe UI',sans-serif; }
+  .cat-card .name{ font-size:15px; font-weight:600; line-height:1.25; }
+  .cat-card .count{ font-family:'Avenir Next','Segoe UI',sans-serif; font-size:11px; color:var(--ink-dim); }
+  .cat-card .bar{ height:4px; border-radius:4px; background: rgba(255,255,255,0.08); overflow:hidden; margin-top:2px;}
+  .cat-card .bar > div{ height:100%; background: var(--gold); }
+
+  .mode-row{ display:flex; gap:10px; margin: 4px 0 18px; }
+  .mode-btn{
+    flex:1; padding:12px; border-radius:12px; border:1px solid var(--teal-line);
+    background: var(--card); color:var(--ink); font-family:'Avenir Next','Segoe UI',sans-serif;
+    font-weight:700; font-size:13px; cursor:pointer; text-align:center;
+  }
+  .mode-btn.primary{ background: var(--coral); border-color: var(--coral); color:#2a0b06;}
+
+  /* Flashcard */
+  .card-wrap{ perspective: 1400px; margin-bottom: 16px; }
+  .flashcard{
+    position:relative; min-height: 300px; border-radius: 18px;
+    transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(.2,.8,.2,1);
+    cursor:pointer;
+  }
+  .flashcard.flipped{ transform: rotateY(180deg); }
+  .face{
+    position:absolute; inset:0; backface-visibility:hidden; border-radius:18px;
+    border:1px solid var(--teal-line); padding:22px; display:flex; flex-direction:column;
+  }
+  .face.front{
+    background: linear-gradient(160deg, #154853, #0f3b45);
+    justify-content:center; align-items:center; text-align:center; gap:10px;
+  }
+  .face.front .cat-tag{ font-family:'Avenir Next','Segoe UI',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold-soft);}
+  .face.front .dish-name{ font-size:26px; font-weight:600; line-height:1.2; }
+  .face.front .price{ font-family:'Avenir Next','Segoe UI',sans-serif; color:var(--ink-dim); font-size:14px; }
+  .face.front .tap-hint{ margin-top:14px; font-family:'Avenir Next','Segoe UI',sans-serif; font-size:11px; color:var(--gold-soft); border:1px solid var(--gold-soft); padding:5px 12px; border-radius:100px;}
+  .face.front .diet-badges{ display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:6px;}
+  .badge{ font-family:'Avenir Next','Segoe UI',sans-serif; font-size:10px; font-weight:700; padding:3px 9px; border-radius:100px; }
+  .badge.vegano{ background:#284d2f; color:#a6e6b4; }
+  .badge.vegetariano{ background:#2c4d3a; color:#b6e6c9; }
+  .badge.kids{ background:#3a3560; color:#c3bdf0; }
+
+  .face.back{
+    background: linear-gradient(160deg, var(--card), var(--card-2));
+    transform: rotateY(180deg); overflow-y:auto; gap:12px;
+  }
+  .face.back .dish-name-small{ font-size:17px; font-weight:700; margin-bottom:2px;}
+  .face.back .desc{ font-family:'Avenir Next','Segoe UI',sans-serif; font-size:13.5px; line-height:1.55; color: var(--ink); }
+  .row-label{ font-family:'Avenir Next','Segoe UI',sans-serif; font-size:10.5px; text-transform:uppercase; letter-spacing:1.5px; color:var(--gold-soft); margin-top:6px; }
+  .allergen-row{ display:flex; flex-wrap:wrap; gap:6px; }
+  .allergen-chip{ font-family:'Avenir Next','Segoe UI',sans-serif; font-size:11.5px; padding:4px 10px; border-radius:100px; background: rgba(232,93,78,0.16); color: var(--coral-soft); border:1px solid rgba(232,93,78,0.4);}
+  .allergen-chip.none{ background: rgba(111,185,143,0.14); color: var(--ok); border-color: rgba(111,185,143,0.4);}
+  .allergen-note{ font-family:'Avenir Next','Segoe UI',sans-serif; font-size:11px; color: var(--ink-dim); font-style:italic; }
+
+  .portion-block{ display:flex; flex-direction:column; gap:5px; }
+  .portion-row{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    font-family:'Avenir Next','Segoe UI',sans-serif; font-size:12.5px;
+    background: rgba(216,164,65,0.08); border:1px solid rgba(216,164,65,0.25);
+    border-radius:8px; padding:6px 10px;
+  }
+  .portion-label{ color: var(--ink); }
+  .portion-price{ color: var(--gold-soft); font-weight:700; white-space:nowrap; }
+
+  .pron-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .pron-btn{
+    font-family:'Avenir Next','Segoe UI',sans-serif; font-size:12px; background: rgba(216,164,65,0.14);
+    color: var(--gold-soft); border:1px solid rgba(216,164,65,0.4); padding:6px 11px; border-radius:100px;
+    cursor:pointer; display:flex; align-items:center; gap:5px;
+  }
+
+  .table-note textarea{
+    width:100%; min-height:52px; border-radius:10px; border:1px solid var(--teal-line);
+    background: rgba(0,0,0,0.18); color:var(--ink); font-family:'Avenir Next','Segoe UI',sans-serif;
+    font-size:12.5px; padding:8px 10px; resize: vertical;
+  }
+
+  .grade-row{ display:flex; gap:8px; margin-top:6px; }
+  .grade-btn{
+    flex:1; padding:10px; border-radius:10px; border:none; cursor:pointer;
+    font-family:'Avenir Next','Segoe UI',sans-serif; font-weight:700; font-size:12.5px;
+  }
+  .grade-btn.miss{ background: rgba(232,93,78,0.85); color:#2a0b06; }
+  .grade-btn.hit{ background: rgba(111,185,143,0.9); color:#062a12; }
+
+  .nav-arrows{ display:flex; justify-content:space-between; margin-top:6px; }
+  .nav-arrows button{
+    background:none; border:none; color: var(--gold-soft); font-family:'Avenir Next','Segoe UI',sans-serif;
+    font-size:13px; cursor:pointer; padding:8px;
+  }
+
+  /* Quiz mode */
+  .quiz-box{
+    background: linear-gradient(160deg, var(--card), var(--card-2)); border:1px solid var(--teal-line);
+    border-radius:18px; padding:20px;
+  }
+  .quiz-box h3{ margin:0 0 4px; font-size:17px; }
+  .quiz-box .scenario{ font-family:'Avenir Next','Segoe UI',sans-serif; font-size:13.5px; color:var(--ink-dim); margin-bottom:14px; line-height:1.5;}
+  .opt-list{ display:flex; flex-direction:column; gap:8px; }
+  .opt-btn{
+    text-align:left; padding:12px 14px; border-radius:12px; border:1px solid var(--teal-line);
+    background: rgba(0,0,0,0.15); color: var(--ink); font-family:'Avenir Next','Segoe UI',sans-serif;
+    font-size:13.5px; cursor:pointer;
+  }
+  .opt-btn.correct{ background: rgba(111,185,143,0.25); border-color: var(--ok); }
+  .opt-btn.wrong{ background: rgba(232,93,78,0.25); border-color: var(--coral); }
+  .quiz-feedback{ font-family:'Avenir Next','Segoe UI',sans-serif; font-size:12.5px; margin-top:12px; color:var(--gold-soft); line-height:1.5;}
+  .next-q{ margin-top:14px; width:100%; padding:11px; border-radius:10px; border:none; background:var(--gold); color:#1a1206; font-weight:700; font-family:'Avenir Next','Segoe UI',sans-serif; cursor:pointer;}
+
+  footer.disclaimer{
+    max-width:640px; margin: 30px auto 10px; padding: 0 14px;
+    font-family:'Avenir Next','Segoe UI',sans-serif; font-size:11px; color: var(--ink-dim);
+    line-height:1.6; text-align:center;
+  }
+  .hidden{ display:none !important; }
+  .empty-state{ text-align:center; padding: 40px 20px; color: var(--ink-dim); font-family:'Avenir Next','Segoe UI',sans-serif; font-size:13px;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="eyebrow">Coco Bambu · Flamboyant</div>
+  <h1>Cardápio na <span class="accent">Ponta da Língua</span></h1>
+  <div class="stats-strip sans">
+    <span><b id="stat-total">0</b> pratos</span>
+    <span><b id="stat-mastered">0</b> dominados</span>
+    <span><b id="stat-due">0</b> pra revisar hoje</span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab-btn active" data-view="home">Categorias</button>
+  <button class="tab-btn" data-view="study">Revisão</button>
+  <button class="tab-btn" data-view="quiz">Simulação</button>
+</nav>
+
+<main>
+
+  <section id="view-home">
+    <div class="search-row">
+      <input type="text" id="search-input" placeholder="Buscar prato (ex: camarão, bacalhau, glúten)…" />
+    </div>
+    <div class="cat-grid" id="cat-grid"></div>
+  </section>
+
+  <section id="view-study" class="hidden">
+    <div class="mode-row">
+      <button class="mode-btn primary" id="btn-due">Revisar pendentes (<span id="due-count">0</span>)</button>
+      <button class="mode-btn" id="btn-all">Estudar tudo</button>
+    </div>
+    <div id="study-area"></div>
+  </section>
+
+  <section id="view-quiz" class="hidden">
+    <div id="quiz-area"></div>
+  </section>
+
+</main>
+
+<footer class="disclaimer">
+Alergênicos exibidos conforme declarado oficialmente no cardápio digital do Coco Bambu. Quando a casa não declara alergênicos para um item, isso <b>não</b> significa ausência — confirme sempre com a cozinha/gerência antes de garantir algo a um cliente com restrição alimentar. Montagem de mesa é preenchida por você conforme aprende com a equipe.
+</footer>
+
+<script>
+(function(){
+
+const CATEGORIES = [
+  {id:1, name:"Lançamentos"},
+  {id:2, name:"Entradas"},
+  {id:3, name:"Saladas"},
+  {id:4, name:"Camarões"},
+  {id:5, name:"Peixe"},
+  {id:6, name:"Moqueca e Peixada"},
+  {id:7, name:"Frutos do Mar"},
+  {id:8, name:"Lagostas"},
+  {id:9, name:"Carnes"},
+  {id:10, name:"Frango"},
+  {id:11, name:"Inclusivos"},
+  {id:12, name:"Kids"},
+  {id:13, name:"Sobremesas"},
+  {id:14, name:"Gelatos"},
+  {id:15, name:"Tortas Inteiras"},
+  {id:16, name:"Pratos Exclusivos"},
+  {id:17, name:"Bebidas"},
+  {id:18, name:"Carta de Vinhos"},
+];
+
+// allergen codes: gluten, laticinios, ovo, crustaceos, moluscos, peixe, castanhas, alcool
+const ITEMS = [
+{cat:18,name:"Vasto Branco",desc:"Branco composto a partir de Trebbiano, Catarrato e Chardonnay, sem passagem por madeira. Fresco e fácil de beber, mostra frutas brancas acompanhadas de notas florais e de ervas, que se confirmam na boca. De corpo médio, tem acidez na medida, textura cremosa e final com toques cítricos e de pêras",prices:[124.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"}]},
+{cat:18,name:"Altosur Sauvignon Blanc",desc:"No nariz, aromas de grama fresca e toques de frutas tropicais. Na boca, encorpado, frutas frescas e pimentas. Fim de boca longo e persistente.",prices:[132.0,181.0],portions:["375 ml","375 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Sauvignon Blanc",lang:"fr-FR",hint:"so-vi-NHÔN BLÃN"}]},
+{cat:18,name:"La Linda Chardonnay",desc:"Cuidadosa seleção de uvas, seguida do desengace.",prices:[237.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"}]},
+{cat:18,name:"Alamos Sauvignon Blanc",desc:"De uma cor amarelo-esverdeada, intensos aromas de toranja e frutas cítricas frescas, doçura e acidez balanceadas, final fresco e longo.",prices:[259.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Sauvignon Blanc",lang:"fr-FR",hint:"so-vi-NHÔN BLÃN"}]},
+{cat:18,name:"Colomé Torrontés",desc:"Frescor de frutas tropicais e cítricas, densidade ao palato, goiaba, uva verde madura e toque floral.",prices:[277.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Torrontés",lang:"es-ES",hint:"to-hon-TÉS"}]},
+{cat:18,name:"Catena Chardonnay",desc:"Aromas cítricos e boa acidez, boa pedida para acompanhar aperitivo.",prices:[407.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"}]},
+{cat:18,name:"Angelica Zapata Chardonnay",desc:"Melhor Chardonnay de Catena para o mercado interno argentino, concentrado e potente, textura redonda e macia com leve toque amanteigado, uvas do vinhedo Adrianna.",prices:[719.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"}]},
+{cat:18,name:"La Linda Rosé",desc:"Aroma de cereja fresca e framboesa, frutado, macio na boca, com equilíbrio e frescor.",prices:[223.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Rosé",lang:"fr-FR",hint:"ho-ZÊ"}]},
+{cat:18,name:"Faro Malbec",desc:"Cor vermelho rubi, nariz complexo com frutas vermelhas, ameixa seca e cassis, taninos doces.",prices:[166.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Malbec",lang:"fr-FR",hint:"mal-BÉC"}]},
+{cat:18,name:"Alamos Malbec 375ml",desc:"Coloração roxa intensa, aromas de frutas vermelhas e ameixa concentrada, toques de baunilha e especiarias.",prices:[191.0],portions:["375 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Malbec",lang:"fr-FR",hint:"mal-BÉC"}]},
+{cat:18,name:"La linda cabernet sauvignon",desc:"Aromas de cassis, cereja negra, ervas frescas e especiarias, taninos finos, bom corpo e final persistente.",prices:[230.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Cabernet Sauvignon",lang:"fr-FR",hint:"ca-ber-NÊ so-vi-NHÔN"}]},
+{cat:18,name:"Finca La Linda Malbec",desc:"Cor rubi, ameixa, cereja, violeta e fundo a baunilha, macio, de médio corpo, persistente.",prices:[230.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Malbec",lang:"fr-FR",hint:"mal-BÉC"}]},
+{cat:18,name:"Alamos Malbec",desc:"Vinho tinto Alamos Malbec.",prices:[259.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Malbec",lang:"fr-FR",hint:"mal-BÉC"}]},
+{cat:18,name:"Luigi Bosca Pinot Noir Reserva",desc:"Cor vermelho rubi brilhante, aromas de morangos, violetas e leve toque de canela, corpo médio, final longo e frutado.",prices:[403.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Pinot Noir",lang:"fr-FR",hint:"pi-NÔ noár"}]},
+{cat:18,name:"Dv catena Syrah-syrah",desc:"Melhor Syrah do Catena Zapata, rico e profundo, com ótima complexidade.",prices:[486.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Syrah",lang:"fr-FR",hint:"si-RÁ"}]},
+{cat:18,name:"Angelica Zapata cabernet sauvignon",desc:"Melhor Cabernet Sauvignon de Catena Zapata para o mercado interno, elegante, potente e concentrado, maturação de 18 meses em barricas.",prices:[629.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Cabernet Sauvignon",lang:"fr-FR",hint:"ca-ber-NÊ so-vi-NHÔN"}]},
+{cat:18,name:"DV Catena Cabernet Sauvignon/Malbec",desc:"Combinação de Malbec (50%) com Cabernet Sauvignon (50%), equilibrado, taninos macios, notas de ameixa e mirtilo.",prices:[656.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Cabernet Sauvignon",lang:"fr-FR",hint:"ca-ber-NÊ so-vi-NHÔN"},{term:"Malbec",lang:"fr-FR",hint:"mal-BÉC"}]},
+{cat:18,name:"Catena Zapata Angelica Zapata Malbec",desc:"Malbec cultuado do mercado interno argentino, uvas de altitude elevada, complexo e exuberante.",prices:[838.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Malbec",lang:"fr-FR",hint:"mal-BÉC"}]},
+{cat:18,name:"Gran Legado Petit Brut",desc:"Chardonnay e Riesling, coloração amarelo palha brilhante, aromas florais e frutado, paladar elegante e equilibrado.",prices:[36.0],portions:["187 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"},{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"Chandon Brut Baby",desc:"Cor amarela com reflexos dourados, espuma abundante, aroma floral e frutado com nuance de pão fresco.",prices:[74.0],portions:["187 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"Gran Legado Brut",desc:"Espumante brasileiro Chardonnay, Viognier, Riesling Italico, 12%.",prices:[104.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"},{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"Gran Legado Moscatel",desc:"Coloração amarelo esverdeado, delicadas borbulhas, aromas de flores, mel e frutos tropicais, final aveludado.",prices:[104.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Chandon Réserve Brut",desc:"Aroma floral e frutado com toque de abacaxi e pão fresco, acidez equilibrada.",prices:[189.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"Chandon Brut Rosé",desc:"Cor rosada lembrando goiaba, borbulhas finas, aromas de frutas vermelhas com toques de especiarias doces.",prices:[212.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Rosé",lang:"fr-FR",hint:"ho-ZÊ"},{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"Luiz Argenta Terroir XXVII Moscatel",desc:"Espumante Moscato da Serra Gaúcha, 7,5%.",prices:[218.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Luz Argenta Jovem Brut",desc:"Perlage fina e persistente, coloração amarela com reflexos esverdeados.",prices:[278.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"La Jovem Brut Rosé",desc:"Cereja claro, perlage fino, frutas vermelhas e notas cítricas, final frutado e cremoso.",prices:[278.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Rosé",lang:"fr-FR",hint:"ho-ZÊ"},{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"L.A Clássico Chardonnay",desc:"Coloração amarela pálida, aromas de abacaxi maduro, damasco e pera, acidez marcante.",prices:[270.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"}]},
+{cat:18,name:"Bueno Bellavista Desirée Merlot",desc:"Bueno Bellavista Desirée Merlot.",prices:[173.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Merlot",lang:"fr-FR",hint:"mer-LÔ"}]},
+{cat:18,name:"Bueno Pinot Noir Reserva",desc:"Textura sedosa, permeando entre frutas, flores e mineralidade.",prices:[210.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Pinot Noir",lang:"fr-FR",hint:"pi-NÔ noár"}]},
+{cat:18,name:"Bueno Petit Verdot Reserva",desc:"Harmoniza com ossobuco, costelas de cordeiro e risotos de cogumelos.",prices:[210.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Petit Verdot",lang:"fr-FR",hint:"pe-TÍ ver-DÔ"}]},
+{cat:18,name:"Vallontano Merlot",desc:"Vinho proporcionado e equilibrado, com boa estrutura e complexidade.",prices:[262.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Merlot",lang:"fr-FR",hint:"mer-LÔ"}]},
+{cat:18,name:"Paralelo 31 Gran Reserva",desc:"Blend de terroir do Rio Grande do Sul.",prices:[273.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Luiz Argenta L.a. Merlot",desc:"Tinto Merlot da Serra Gaúcha, 13,6%.",prices:[277.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Merlot",lang:"fr-FR",hint:"mer-LÔ"}]},
+{cat:18,name:"Faro Chardonnay",desc:"Cor amarela brilhante, aromas de banana, pêssego maduro e frutas tropicais, equilibrado.",prices:[158.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"}]},
+{cat:18,name:"Bisquertt La Joya Gran Reserva Gewurztraminer",desc:"Frutas brancas frescas, notas de lichia, toques cítricos e florais.",prices:[293.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Gewürztraminer",lang:"de-DE",hint:"gue-vurts-tra-MI-ner"}]},
+{cat:18,name:"Petirrojo Cabernet Sauvignon",desc:"Tinto Cabernet Sauvignon chileno, Colchagua, 13,5%.",prices:[55.0,92.0],portions:["187 ml","187 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Cabernet Sauvignon",lang:"fr-FR",hint:"ca-ber-NÊ so-vi-NHÔN"}]},
+{cat:18,name:"Faro Carmenère",desc:"Aromas de frutas vermelhas frescas, ameixa, compota e especiarias, taninos doces e aveludados.",prices:[153.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Carmenère",lang:"fr-FR",hint:"car-me-NÉR"}]},
+{cat:18,name:"Faro Cabernet Sauvignon",desc:"Cor rubi com reflexos violáceos, aroma de groselhas e cerejas negras, taninos macios e maduros.",prices:[153.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Cabernet Sauvignon",lang:"fr-FR",hint:"ca-ber-NÊ so-vi-NHÔN"}]},
+{cat:18,name:"Terranoble Cabernet Sauvignon Reserva",desc:"Coloração vermelho púrpura, aromas de frutas vermelhas e cereja, toque de especiarias, taninos redondos.",prices:[267.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Cabernet Sauvignon",lang:"fr-FR",hint:"ca-ber-NÊ so-vi-NHÔN"}]},
+{cat:18,name:"Carmen Premier Reserva Merlot",desc:"Tinto Merlot chileno do Vale do Rapel, 14%.",prices:[286.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Merlot",lang:"fr-FR",hint:"mer-LÔ"}]},
+{cat:18,name:"Almaviva",desc:"Bom corpo, boa profundidade, macio, taninos doces e finos, refinado e equilibrado.",prices:[3541.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Champagne Moët & Chandon Impérial Brut",desc:"Cor amarelada com tons dourados, aromas de abacaxi, manga, ameixa amarela e damasco, paladar elegante, cremoso e fresco.",prices:[726.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Brut",lang:"fr-FR",hint:"BRÚT"},{term:"Champagne",lang:"fr-FR",hint:"chan-PANH"}]},
+{cat:18,name:"Champagne Veuve Clicquot Brut",desc:"Elaborado com Pinot Noir, Meunier e Chardonnay, coloração amarelo palha, aromas de maçã, pera e pêssego, harmoniza com frutos do mar e salmão.",prices:[770.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"},{term:"Pinot Noir",lang:"fr-FR",hint:"pi-NÔ noár"},{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"Champagne Dom Pérignon Brut",desc:"Champagne icônico da Maison Dom Pérignon, produzido com Chardonnay e Pinot Noir apenas em safras excepcionais.",prices:[2874.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"},{term:"Pinot Noir",lang:"fr-FR",hint:"pi-NÔ noár"},{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"Dom Pérignon Brut Champagne",desc:"Mesmo rótulo do item anterior, produzido a partir de Chardonnay e Pinot Noir de vinhedos selecionados.",prices:[2874.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"},{term:"Pinot Noir",lang:"fr-FR",hint:"pi-NÔ noár"},{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"Ch. Roubine Cru Classé Rosé",desc:"Rosé de Côtes de Provence, aromas de frutas vermelhas frescas e notas florais, boa acidez.",prices:[493.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Rosé",lang:"fr-FR",hint:"ho-ZÊ"}]},
+{cat:18,name:"Les Pagodes de Cos",desc:"Cor granada profunda, notas de cereja em compota, chocolate meio amargo e cassis, encorpado e elegante.",prices:[3189.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Barons De Rothschild Château Duhart Milon",desc:"Envelhecimento de 50% do vinho em barricas novas por 18 meses.",prices:[4642.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Vasto Rosé",desc:"Rosé italiano Sangiovese e Negroamaro, Sicília, 11,5%.",prices:[124.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Rosé",lang:"fr-FR",hint:"ho-ZÊ"},{term:"Sangiovese",lang:"it-IT",hint:"san-djo-VÉ-ze"}]},
+{cat:18,name:"Vasto Tinto Rosso",desc:"Tinto italiano Sangiovese, Nero d'Avola e Merlot, Sicília, 12,5%.",prices:[124.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Merlot",lang:"fr-FR",hint:"mer-LÔ"},{term:"Sangiovese",lang:"it-IT",hint:"san-djo-VÉ-ze"},{term:"Nero d'Avola",lang:"it-IT",hint:"NÉ-ro DÁ-vo-la"}]},
+{cat:18,name:"Regaleali Nero d' Avola",desc:"Uva Nero d'Avola, tinto saboroso e macio, fruta exuberante e boa acidez, estilo do sul da Itália.",prices:[407.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Nero d'Avola",lang:"it-IT",hint:"NÉ-ro DÁ-vo-la"}]},
+{cat:18,name:"Coco Bambu Brunello di Montalcino",desc:"Vinho toscano de clima mediterrâneo, longa estação de amadurecimento das uvas.",prices:[564.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Brunello di Montalcino",lang:"it-IT",hint:"bru-NÉ-lo di mon-tal-TCHÍ-no"}]},
+{cat:18,name:"Sassoalloro",desc:"Superstar toscano, intensidade, concentração e riqueza aromática, toque aristocrático.",prices:[575.0,825.0],portions:["375 ml","375 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Vinho Barolo Coppo",desc:"Uvas de vinhedos próprios em Canelli, colheita manual, solo com areia e limo.",prices:[2621.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Barolo",lang:"it-IT",hint:"ba-RÓ-lo"}]},
+{cat:18,name:"Tignanello",desc:"Aromas de frutas vermelhas, framboesas e alcaçuz, equilibrado, taninos levigados, final longo e persistente.",prices:[3015.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Tignanello",lang:"it-IT",hint:"ti-nha-NÉ-lo"}]},
+{cat:18,name:"Gaja Barbaresco",desc:"Ícone do Piemonte, bouquet complexo e rico, potente e elegante, casta Nebbiolo.",prices:[6015.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Nebbiolo",lang:"it-IT",hint:"ne-BIÓ-lo"},{term:"Barbaresco",lang:"it-IT",hint:"bar-ba-RÉS-co"}]},
+{cat:18,name:"Sileni Estate",desc:"Branco Chardonnay neozelandês, Hawke's Bay, 13%.",prices:[585.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"}]},
+{cat:18,name:"Coco Bambu Branco Português Alentejano",desc:"Uvas Antão Vaz, Arinto e Alvarinho, límpido e cristalino, notas cítricas e mineral, ideal com peixes e frutos do mar.",prices:[124.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Muros Antigos Loureiro",desc:"Cor palha com tons esverdeados, aromas cítricos e flor de laranjeira, acidez graciosa e mineral.",prices:[332.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Loureiro",lang:"pt-PT",hint:"lo-REI-ro"}]},
+{cat:18,name:"Soalheiro Alvarinho",desc:"Um dos melhores Alvarinhos de Portugal, subregião de Melgaço, delicioso, encorpado e complexo.",prices:[560.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Coco Bambu Rosé Português Alentejano",desc:"Cor salmão pálido brilhante, aroma de frescura mineral, notas de toranja verde e ameixa branca.",prices:[124.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Rosé",lang:"fr-FR",hint:"ho-ZÊ"}]},
+{cat:18,name:"Coco Bambu Tinto Português Alentejano",desc:"Uvas Aragonez, Trincadeira e Alicante Bouschet, cor rubi intensa, notas de frutos vermelhos, ideal com carnes e massas.",prices:[124.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Quinta Do Correio Dão Tinto Doc",desc:"Coloração rubi, aromas de fruta silvestre, caruma e lavanda, equilibrado e fresco.",prices:[216.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Cartuxa Colheita",desc:"Aroma evoluído, casta Trincadeira, notas quentes da planície alentejana.",prices:[534.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Pêra-Manca",desc:"Clássico alentejano, especiarias doces, notas florais e minerais, taninos macios e final profundo.",prices:[6508.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Barista Pinotage",desc:"Frutas maduras e notável toque de café, chocolate e ameixas, casta Pinotage.",prices:[438.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"The Chocolate Block",desc:"Opulento e estruturado, notas de especiarias, taninos maduros e acidez equilibrada.",prices:[1006.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Constelación Brut",desc:"Espumante de La Mancha, tradição vinícola local.",prices:[132.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"Artero Macabeo",desc:"Amarelo-palha claro, aromas de damasco e pêra, boca ampla e fresca, levemente herbácea.",prices:[233.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Gran Feudo Chardonnay",desc:"Branco seco, fresco e com ótima acidez, notas de fruta madura, Navarra.",prices:[297.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Chardonnay",lang:"fr-FR",hint:"char-do-NÊ"}]},
+{cat:18,name:"Constelacion Brut Rose",desc:"Rosé espanhol, uva Marselan, Cádiz, 10%.",prices:[132.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Rosé",lang:"fr-FR",hint:"ho-ZÊ"},{term:"Brut",lang:"fr-FR",hint:"BRÚT"}]},
+{cat:18,name:"Artero Rosé Wine",desc:"Rosa cereja cristalino, frutas frescas (morangos, framboesas), equilíbrio e frescor.",prices:[222.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Rosé",lang:"fr-FR",hint:"ho-ZÊ"}]},
+{cat:18,name:"Luis Cañas Joven",desc:"Rioja Alavesa, influência oceânica, altitude média de 475 metros.",prices:[300.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Gran Feudo Crianza",desc:"Blend de 70% Tempranillo, 25% Garnacha e 5% Cabernet Sauvignon, macio e saboroso, Navarra.",prices:[337.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Cabernet Sauvignon",lang:"fr-FR",hint:"ca-ber-NÊ so-vi-NHÔN"},{term:"Tempranillo",lang:"es-ES",hint:"tem-pra-NHÍ-lho"},{term:"Garnacha",lang:"es-ES",hint:"gar-NÁ-cha"}]},
+{cat:18,name:"Conde De Valdemar Crianza",desc:"Cor vermelho cereja intenso, aromas de frutas maduras, especiarias e cacau, arredondado e bem equilibrado.",prices:[470.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Vinho Condado de Haza Crianza",desc:"Tinto robusto e cheio de fruta, opulência e toque sedoso, estilo Ribera del Duero.",prices:[666.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Marques de Murrieta Reserva",desc:"Frutas vermelhas maduras, notas de baunilha, coco e chocolate, toques florais e terrosos.",prices:[779.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Alvaro Palácios Camins del Priorat D.O.C",desc:"Permanece por 8 meses em barricas de madeira, região do Priorat.",prices:[838.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"Alion",desc:"Tempranillo da Ribera del Duero, rico e intenso, elegante, especiarias exóticas e madeira.",prices:[2678.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Tempranillo",lang:"es-ES",hint:"tem-pra-NHÍ-lho"}]},
+{cat:18,name:"Vega Sicilia Unico 2012",desc:"Cor vermelho rubi, notas de frutas vermelhas e cereja, taninos macios, boa acidez.",prices:[11869.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:18,name:"CMS Cab SauvignonMerlot e Syrah",desc:"Tinto de Columbia Valley, Cabernet Sauvignon, Merlot e Syrah, 14%.",prices:[619.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Cabernet Sauvignon",lang:"fr-FR",hint:"ca-ber-NÊ so-vi-NHÔN"},{term:"Merlot",lang:"fr-FR",hint:"mer-LÔ"},{term:"Syrah",lang:"fr-FR",hint:"si-RÁ"}]},
+{cat:18,name:"Pisano Cisplatino Torrontés",desc:"Origem incerta do Mediterrâneo, cacho grande e solto, grãos perfumados, finos aromas e elegância.",prices:[282.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Torrontés",lang:"es-ES",hint:"to-hon-TÉS"}]},
+{cat:18,name:"Garzón Reserva Albariño",desc:"Ícone dos brancos uruguaios, notas florais de jasmim, grapefruit e pêssegos, fresco, longo e mineral.",prices:[295.0],portions:["750 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Albariño",lang:"es-ES",hint:"al-ba-RI-nho"}]},
+{cat:1,name:"Bacalhau à Brás",desc:"Clássico português feito com lombo de bacalhau desfiado refogado no azeite de oliva com ovos cremosos e batata palha crocante, finalizado com salsinha e azeitonas Azapa.",prices:[147.0,289.0],portions:["250 g","500 g"],all:[],undeclared:true,foreign:[]},
+{cat:1,name:"Camarão al Mare Rosso",desc:"06 unidades de camarões GG salteados com alho, cebola e manjericão, envolvidos em molho de tomate italiano fresco com parmesão, servidos com fettuccine.",prices:[154.0],portions:["06 unidades · camarão GG"],all:[],undeclared:true,foreign:[{term:"Fettuccine",lang:"it-IT",hint:"fe-tu-CHÍ-ni"}]},
+{cat:1,name:"Bombinha de Camarão",desc:"Bolinhas crocantes recheadas com camarão, cream cheese e Catupiry, empanadas e acompanhadas de molho cremoso de maionese e mostarda levemente picante.",prices:[59.0],portions:[""],all:[],undeclared:true,foreign:[{term:"Cream Cheese",lang:"en-US",hint:"crím TCHÍZ"}]},
+{cat:1,name:"Arpão do Pescador",desc:"Camarões GG defumados e grelhados no charboiler, servidos com molho provençal e alho frito laminado.",prices:[102.0],portions:["camarão GG"],all:[],undeclared:true,foreign:[{term:"Provençal",lang:"fr-FR",hint:"pro-van-SÁL"}]},
+{cat:1,name:"Camarão Pistola ao Alho",desc:"Inspirado no clássico Gambas al Ajillo. Camarões Pistola GG refogados em azeite fervilhante, lâminas de alho dourado e leve toque de pimenta, ao estilo das marisqueiras ibéricas. Acompanha pão rústico.",prices:[116.0],portions:["camarão Pistola, GG"],all:[],undeclared:true,foreign:[]},
+{cat:1,name:"Coco Bambu Surf and Turf",desc:"Tornedor de filé mignon grelhado, acompanhado de camarões GG grelhados e finalizado com cremoso molho de frutos do mar perfumado com salsinha fresca. Servido com arroz à parte.",prices:[176.0,264.0],portions:["200 g · camarão GG","400 g · camarão GG"],all:[],undeclared:true,foreign:[{term:"Surf and Turf",lang:"en-US",hint:"SÊRF end TÊRF"}]},
+{cat:2,name:"Couvert Especial",desc:"Camarões marinados, tomate seco com queijo minas frescal temperado, tomates grelhados com alho frito, caponata de berinjela e ceviche de salmão. Acompanha torradas temperadas e pães de queijo.",prices:[110.0],portions:["camarão individual 18 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Ceviche de Salmão",desc:"Ceviche de Salmão. Acompanha cesta de torradas temperadas.",prices:[88.0],portions:["165 g"],all:["peixe"],undeclared:false,foreign:[]},
+{cat:2,name:"Polvo ao Azeite de Tomates Secos",desc:"Polvo em cubos refogados no azeite com cebola alho, pasta de tomate seco, parmesão e castanha de caju. Acompanha 6 pãezinhos.",prices:[136.0],portions:["200 g"],all:["gluten","laticinios","castanhas"],undeclared:false,foreign:[]},
+{cat:2,name:"Camarão no alho e óleo",desc:"Camarão no alho e óleo.",prices:[68.0,104.0],portions:["135 g · camarão individual 18 g","270 g · camarão individual 18 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Camarão Jangadeiro",desc:"04 camarões empanados, recheados com queijo Catupiry. Acompanha molho taíba (molho rosé especial da casa com especiarias).",prices:[86.0],portions:["camarão individual 30 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[{term:"Rosé",lang:"fr-FR",hint:"ho-ZÊ"}]},
+{cat:2,name:"Lula à Doré",desc:"Anéis de lula crocantes. Acompanha molho tártaro.",prices:[62.0],portions:["200 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Isca de Peixe",desc:"Iscas de peixe à milanesa com gergelim e molho tártaro.",prices:[79.0,120.0],portions:["130 g","260 g"],all:["gluten","peixe"],undeclared:false,foreign:[]},
+{cat:2,name:"Batata Frita Especial",desc:"Batatas fritas cobertas com queijo muçarela derretido e bacon crocante.",prices:[54.0],portions:["400 g"],all:["laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Dadinhos de Tapioca",desc:"Dadinhos de tapioca. Acompanha geléia de pimenta.",prices:[66.0],portions:[""],all:["laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Camarão Recife",desc:"Camarões inteiros (com casca e cabeça) marinados na cerveja, levemente empanados, fritos e refogados com cebola e alho.",prices:[84.0],portions:["400 g · camarão individual 13 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Camarão na Manteiga Acebolado",desc:"Filé de camarão salteado na manteiga da terra e cebola. Acompanha macaxeira ao leite.",prices:[125.0],portions:["270 g · camarão individual 18 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Pastel de Carne de Sol",desc:"Massa fresca recheada com carne de sol, cebola roxa, coentro e queijo coalho (4 unidades).",prices:[46.0],portions:["4 Unidades"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Pastel de Camarão",desc:"Massa fresca recheada com camarão, Catupiry e salsinha (4 unidades).",prices:[61.0],portions:["4 Unidades"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Pastel de Queijo",desc:"Massa fresca recheada com queijo coalho e muçarela (4 unidades).",prices:[36.0],portions:["4 Unidades"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Escondidinho de Camarão",desc:"Camarões refogados com cebola, salsinha, nata e Catupiry, coberto com purê de macaxeira e gratinado com queijo parmesão.",prices:[67.0],portions:["camarão individual 18 g"],all:["gluten","crustaceos"],undeclared:false,foreign:[]},
+{cat:2,name:"Escondidinho de Carne de Sol",desc:"Carne de sol desfiada e refogada com cebola roxa, coentro e nata, coberto com purê de macaxeira e gratinado com queijo coalho.",prices:[58.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Entrada Carpaccio",desc:"Carpaccio de carne temperado com molho de alcaparras, mostarda, parmesão e rúcula. Servido com pão rústico.",prices:[100.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Casquinho de Caranguejo",desc:"Carne de caranguejo refogada com cheiro-verde, tomate e leite de coco natural. Acompanha farofa da Bahia e molho de coco.",prices:[71.0],portions:["110 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Croquete de Bacalhau",desc:"4 unidades servidas com molho tártaro.",prices:[81.0],portions:["4 Unidades"],all:["gluten","peixe"],undeclared:false,foreign:[]},
+{cat:2,name:"Espetinho de Camarão em Crosta",desc:"Espetinho de camarão em crosta.",prices:[92.0],portions:["270 g · camarão individual 18 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Maminha Angus",desc:"Corte de maminha angus com farofa, chimichurri e vinagrete.",prices:[93.0],portions:["250 g"],all:[],undeclared:true,foreign:[]},
+{cat:2,name:"Filé com Fritas",desc:"Cubos de filé, refogado com cebola roxa e molho barbecue. Acompanha batata frita.",prices:[71.0,145.0],portions:["100 g","300 g"],all:["gluten"],undeclared:false,foreign:[]},
+{cat:2,name:"Entrada de Filé aos Quatro Queijos",desc:"Cubos de filé mignon com molho de queijos. Acompanha cesta de torradas temperadas.",prices:[76.0,150.0],portions:["100 g","300 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Camarão à Milanesa",desc:"Camarão à milanesa com gergelim. Acompanha molho tártaro.",prices:[77.0,120.0],portions:["135 g · camarão individual 18 g","270 g · camarão individual 18 g"],all:["gluten","crustaceos"],undeclared:false,foreign:[]},
+{cat:2,name:"Entradinha Espetinho de Queijo Coalho",desc:"Espetinho de queijo coalho. Acompanha melaço de cana.",prices:[52.0],portions:["135 g"],all:["laticinios"],undeclared:false,foreign:[]},
+{cat:2,name:"Empada de Queijo do Reino",desc:"Empada de queijo do reino (1 unidade).",prices:[28.0],portions:["1 unidade"],all:[],undeclared:true,foreign:[]},
+{cat:2,name:"Empada de Camarão",desc:"Empada de camarão (1 unidade).",prices:[26.0],portions:["1 unidade · camarão individual 13 g"],all:[],undeclared:true,foreign:[]},
+{cat:2,name:"Entradinha Caldinho de Camarão",desc:"Caldo com camarões, alho, cebola, coentro, pimentões, pimenta de cheiro, mandioquinha e leite de coco.",prices:[21.0],portions:[""],all:["gluten","peixe","crustaceos"],undeclared:false,foreign:[]},
+{cat:2,name:"Entradinha Caldinho de Peixe",desc:"Caldo à base de peixe, pimentões, pimenta de cheiro, cebola, alho, leite de coco e coentro.",prices:[21.0],portions:[""],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[]},
+{cat:3,name:"Salada de Salmão",desc:"Ceviche de salmão, alface americana, alface crespa, alface roxa, rúcula, azeitonas pretas e tomate cereja. Servida na casquinha de pizza.",prices:[77.0],portions:["160 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[]},
+{cat:3,name:"Salada Tropical",desc:"Camarões grelhados, folhas verdes, manga, tomate cereja, cenoura e castanha de caju, molho especial. Servida na casquinha de pizza.",prices:[65.0],portions:["95 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:3,name:"Salada Caesar",desc:"Alface americana, parmesão ralado, molho caesar e croûtons. Servida na casquinha de pizza.",prices:[44.0,62.0,64.0],portions:["200 g","95 g",""],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:3,name:"Salada Light",desc:"Folhas verdes, tomate cereja, cenoura, palmito e molho de iogurte. Servida na casquinha de pizza.",prices:[61.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:3,name:"Salada Caesar de Frango",desc:"Alface americana, frango grelhado fatiado, parmesão ralado, molho caesar e croûtons. Servida na casquinha de pizza.",prices:[62.0],portions:["200 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:3,name:"Salada Sertão",desc:"Alface americana, queijo coalho grelhado, tomate, azeitona verde, palmito, pimentão, cebola e molho vinagrete especial. Servida na casquinha de pizza.",prices:[63.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:3,name:"Salada de Carpaccio",desc:"Mix de folhas verdes sobre carpaccio de carne temperado com molho de alcaparras, mostarda e parmesão. Servida na casquinha de pizza.",prices:[75.0],portions:[""],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:3,name:"Salada Caprese Coco Bambu",desc:"Alface americana, rúcula, muçarela de búfala, tomate, manjericão, azeitonas pretas, tapenade de azeitonas pretas. Servida na casquinha de pizza.",prices:[67.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:3,name:"Salada Juliana",desc:"Alface americana, cenoura, palmito, tomate cereja, queijo parmesão, molho de mostarda com mel e batata palha.",prices:[44.0],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:4,name:"Camarão ao Forno",desc:"Camarões inteiros (com cabeça) ao forno, regados com suave molho provençal. Acompanha risoto de limão siciliano.",prices:[147.0],portions:["600 g · camarão individual 30 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[{term:"Provençal",lang:"fr-FR",hint:"pro-van-SÁL"}]},
+{cat:4,name:"Camarão em Crosta",desc:"Camarões em crosta de pão de alho. Acompanha salada de alface americana, tomate, azeitona verde, palmito, pimentão e cebola, e risoto de limão siciliano.",prices:[215.0],portions:["2 Pessoas · 380 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Camarão Ipanema",desc:"Camarões salteados no azeite com alho, cebola, pimentão, coentro e tomate. Servidos sobre arroz regado com um toque de leite de coco e batata palha.",prices:[173.0,241.0],portions:["2 Pessoas · 220 g · camarão individual 18 g","4 Pessoas · 380 g · camarão individual 18 g"],all:["crustaceos"],undeclared:false,foreign:[]},
+{cat:4,name:"Camarão Mucuripe",desc:"Camarões com espaguete italiano coberto com molho de tomate fresco acrescido de tomate seco, nata, azeitona preta e rúcula.",prices:[185.0,272.0],portions:["2 Pessoas · 220 g · camarão individual 18 g","4 Pessoas · 380 g · camarão individual 18 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Camarão Provençal",desc:"Camarões puxados no azeite extra virgem, alho e cebola, flambados com vinho branco, aromatizados com ervas de provence, molho de tomate fresco. Servido sobre fettuccine com molho a base de creme de leite e toque de limão siciliano.",prices:[278.0],portions:["camarão individual 30 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[{term:"Fettuccine",lang:"it-IT",hint:"fe-tu-CHÍ-ni"},{term:"Provençal",lang:"fr-FR",hint:"pro-van-SÁL"}]},
+{cat:4,name:"Carbonara Coco Bambu",desc:"Carbonara de camarão com fettuccine e molho de gema de ovo, queijo parmesão, creme de leite fresco, pimenta do reino, bacon, finalizado com farofa crocante de panko.",prices:[228.0,361.0],portions:["2 Pessoas · 220 g · camarão individual 18 g","4 Pessoas · 380 g · camarão individual 18 g"],all:["gluten","crustaceos"],undeclared:false,foreign:[{term:"Carbonara",lang:"it-IT",hint:"car-bo-NÁ-ra"},{term:"Fettuccine",lang:"it-IT",hint:"fe-tu-CHÍ-ni"},{term:"Panko",lang:"ja-JP",hint:"PÁN-co"}]},
+{cat:4,name:"Camarão Coco Bambu",desc:"Camarões recheados com Catupiry e empanados. Servidos sobre cremoso arroz com camarões, ervilhas e presunto, molho branco. Gratinado com muçarela e parmesão. Acompanha batata palha.",prices:[228.0,270.0,440.0],portions:["2 Pessoas · 276 g · camarão individual 18 g e 30 g","3 Pessoas · 409 g · camarão individual 18 g e 30 g","6 Pessoas · 758 g · camarão individual 18 g e 30 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Camarão Coco Brasil",desc:"Camarões empanados e recheados com Catupiry, sobre cremoso arroz de moqueca com camarões e coentro, coberto com batata palha. Acompanha farofa de panko com bacon e alho-poró.",prices:[209.0,252.0,426.0],portions:["2 Pessoas · 276 g","3 Pessoas · 409 g","6 Pessoas · 758 g"],all:["gluten","peixe"],undeclared:false,foreign:[{term:"Panko",lang:"ja-JP",hint:"PÁN-co"}]},
+{cat:4,name:"Camarão Grelhado Fernando de Noronha",desc:"Camarões salteados no azeite e alho, com legumes, palmito, batata recheada, tomates cereja e muçarela de búfala, leve molho escalivada e azeite de ervas. Acompanha arroz de brócolis.",prices:[215.0],portions:["2 Pessoas · 380 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Camarão Internacional",desc:"Camarões servidos sobre cremoso arroz com ervilhas e presunto, molho branco. Gratinado com muçarela e parmesão. Acompanha batata palha.",prices:[185.0,272.0],portions:["2 Pessoas · 220 g","4 Pessoas · 380 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Camarão Jurerê",desc:"Camarões puxados no azeite, alho e cebola, flambados com vinho branco, ervas de provence, molho de tomate fresco. Servido sobre fettuccine com molho a base de creme de leite e limão siciliano.",prices:[194.0,274.0],portions:["2 Pessoas · 220 g","4 Pessoas · 380 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[{term:"Fettuccine",lang:"it-IT",hint:"fe-tu-CHÍ-ni"}]},
+{cat:4,name:"Camarão Mônaco",desc:"Camarões empanados acompanhados de risoto de aspargos e parmesão coberto com lâminas de amêndoas assadas.",prices:[165.0],portions:["220 g"],all:["gluten","crustaceos"],undeclared:false,foreign:[]},
+{cat:4,name:"Camarão Siciliano",desc:"6 camarões recheados com queijo Catupiry e empanados, servidos sobre risoto de limão siciliano, decorado com salsinha. Acompanha batata palha.",prices:[166.0],portions:["6 Unidades"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Praia de Boa Viagem",desc:"Camarões refogados com alho e cebola, flambados no vinho branco. Servido sobre espaguete ao molho bechamel e espinafre. Gratinado com muçarela e parmesão.",prices:[187.0],portions:["220 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[{term:"Bechamel",lang:"fr-FR",hint:"be-cha-MÉL"}]},
+{cat:4,name:"Camarão Florentina",desc:"Camarões refogados com alho e cebola, flambados no vinho branco. Servido sobre espaguete ao molho bechamel e espinafre. Gratinado com muçarela e parmesão.",prices:[198.0,284.0],portions:["2 Pessoas · 220 g","4 Pessoas · 380 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[{term:"Bechamel",lang:"fr-FR",hint:"be-cha-MÉL"}]},
+{cat:4,name:"Praia de Búzios",desc:"Arroz de leite com queijo coalho coberto com camarões refogados com coentro, cebola, alho, tomate fresco e nata. Gratinado com queijo coalho e coberto com batata palha.",prices:[173.0],portions:["220 g · camarão individual 13 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Camarão Iracema",desc:"Arroz de leite com queijo coalho, coberto com camarões refogados com coentro, cebola, alho, tomate fresco e nata. Gratinado com queijo coalho, acompanha macaxeira frita.",prices:[185.0,253.0],portions:["2 Pessoas · 380 g · camarão individual 18 g","4 Pessoas · 220 g · camarão individual 18 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Praia de Olinda",desc:"Camarões refogados com alho e cebola, servido sobre cremoso arroz com manjericão, molho branco. Gratinado com muçarela. Acompanha batata palha.",prices:[173.0],portions:["220 g · camarão individual 13 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Camarão Mediterrâneo",desc:"Camarões refogados no azeite com alho e cebola, servido sobre cremoso arroz com manjericão, molho branco. Gratinado com muçarela e parmesão. Acompanha batata palha.",prices:[184.0,255.0],portions:["2 Pessoas · 220 g · camarão individual 18 g","4 Pessoas · 380 g · camarão individual 18 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Bobó de Camarão",desc:"Camarões refogados no azeite de dendê com tomate, cebola, pimentões, purê de macaxeira cozida, coentro e leite de coco. Acompanha arroz branco e purê de abóbora gratinado com queijo coalho.",prices:[236.0],portions:["380 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:4,name:"Camarão à Delícia",desc:"Tradicional receita cearense. Camarões servidos com molho a base de creme de leite e bananas fritas. Gratinado com muçarela e parmesão. Acompanha arroz branco e batata gratinada.",prices:[215.0],portions:["380 g · camarão individual 18 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:5,name:"Sirigado/Badejo ao Forno",desc:"Filé de sirigado/badejo assado no forno com molho a base de natas e vinho branco, tomate, batatas torneadas, cebola, pimentões, cenoura, coentro e alho frito. Acompanha arroz branco e farofa de bananas.",prices:[152.0,264.0],portions:["250 g","500 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[]},
+{cat:5,name:"Sirigado/Badejo Meunière",desc:"Filé de sirigado grelhado com molho a base de laranja, limão, manteiga e toque de alecrim fresco. Acompanha arroz branco e batata chips.",prices:[152.0,254.0],portions:["250 g","500 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[{term:"Meunière",lang:"fr-FR",hint:"mê-NIÊR"}]},
+{cat:5,name:"Pescada Amarela à Belle Meunière",desc:"Peixe da estação grelhado com molho meunière, camarões, alcaparras, champignon e salsinha. Acompanha legumes grelhados e arroz de brócolis.",prices:[220.0],portions:["514 g"],all:["gluten","peixe","crustaceos"],undeclared:false,foreign:[{term:"Meunière",lang:"fr-FR",hint:"mê-NIÊR"}]},
+{cat:5,name:"Pescada Amarela Meunière",desc:"Filé de pescada amarela grelhado com molho a base de laranja, limão, manteiga e toque de alecrim fresco. Acompanha legumes grelhados e arroz de brócolis.",prices:[210.0],portions:["400 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[{term:"Meunière",lang:"fr-FR",hint:"mê-NIÊR"}]},
+{cat:5,name:"Pescada Amarela à Delícia",desc:"Filé de pescada amarela com bananas fritas e molho à base de creme de leite, gratinado com muçarela e parmesão. Acompanha arroz branco e batatas gratinadas.",prices:[212.0],portions:["400 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[]},
+{cat:5,name:"Pescada Amarela Amalfitana",desc:"Filé de peixe ao forno com leve molho amanteigado de tomates cerejas, alcaparras, vinho branco e manjericão. Acompanha batatas ao forno e arroz cremoso com pesto de manjericão.",prices:[225.0],portions:["400 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[{term:"Amalfitana",lang:"it-IT",hint:"a-mal-fi-TÁ-na"}]},
+{cat:5,name:"Pescada Amarela Crocante",desc:"Filé de peixe empanado ao coco levemente adocicado e farinha de pães frescos, crocante por fora e macio por dentro. Acompanha arroz de castanha e maionese de batata com picles de pepino.",prices:[214.0],portions:["400 g"],all:["gluten","peixe"],undeclared:false,foreign:[]},
+{cat:5,name:"Salmão à Matias Beck",desc:"Filé de salmão grelhado com manteiga, nozes, champignon e salsinha. Acompanha arroz de brócolis e cuscuz marroquino com brócolis, cenoura, couve-flor, alho, cebola e pimentão.",prices:[221.0],portions:["400 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[]},
+{cat:5,name:"Salmão em Crosta de Gergelim",desc:"Filé de salmão grelhado com crosta de gergelim, molho teriyaki. Acompanha arroz branco e cuscuz marroquino com brócolis, cenoura, couve-flor, alho, cebola e pimentão.",prices:[214.0],portions:["400 g"],all:["gluten","peixe"],undeclared:false,foreign:[{term:"Teriyaki",lang:"ja-JP",hint:"te-ri-IÁ-qui"}]},
+{cat:5,name:"Salmão com Vinagrete de Manga",desc:"Filé de salmão com vinagrete de manga da casa. Acompanha arroz branco.",prices:[209.0],portions:["400 g"],all:["peixe"],undeclared:false,foreign:[]},
+{cat:5,name:"Bacalhau à Gomes de Sá",desc:"Lombo de bacalhau em lascas assado com cebola, mix de pimentões, batatas, ovos, cebolinha e azeitonas azapa. Acompanha arroz de brócolis e farofa de ovos.",prices:[149.0,292.0],portions:["250 g","500 g"],all:["gluten","peixe"],undeclared:false,foreign:[]},
+{cat:5,name:"Bacalhau com Natas",desc:"Lombo de bacalhau em lascas sobre fatias de batata inglesa com molho da casa à base de nata. Gratinado com parmesão e muçarela. Acompanha arroz com brócolis e farofa de ovos.",prices:[158.0,310.0],portions:["250 g","500 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[]},
+{cat:5,name:"Bacalhau à Lagareiro",desc:"Lombo de bacalhau assado no forno com azeite, alho confitado, cebola, ovos, tomate, azeitona azapa, batata, abóbora e brócolis. Acompanha arroz com brócolis.",prices:[171.0,336.0],portions:["250 g","500 g"],all:["gluten","peixe"],undeclared:false,foreign:[]},
+{cat:5,name:"Tilápia à Meunière",desc:"Filé de tilápia grelhado com molho meunière, alcaparras, champignon e ervilhas. Acompanha arroz com brócolis e legumes.",prices:[193.0],portions:["400 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[{term:"Meunière",lang:"fr-FR",hint:"mê-NIÊR"}]},
+{cat:5,name:"Tilápia Pescador",desc:"Filé de tilápia grelhado com molho a base de azeite, cebolas, alcaparras e salsinha. Acompanha arroz de alho e batata soutê.",prices:[167.0],portions:["400 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[]},
+{cat:5,name:"Tilápia Coco Brasil",desc:"Filé de tilápia com crosta de pão de alho, pesto de rúcula e cebola caramelada picada. Acompanha purê de mandioquinha e arroz branco.",prices:[190.0],portions:["400 g"],all:["peixe"],undeclared:false,foreign:[]},
+{cat:5,name:"Tilápia à Delícia",desc:"Tilápia com bananas fritas e molho branco, gratinado com muçarela e parmesão. Acompanha arroz branco e batatas gratinadas.",prices:[171.0],portions:["400 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[]},
+{cat:6,name:"Moqueca Cearense de Camarão",desc:"Origem indígena com toques cearenses. Feita com tomate, cebola e pimentões refogados, pimenta de cheiro, leite de coco, azeite de dendê e coentro.",prices:[215.0],portions:["500 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:6,name:"Moqueca Cearense de Peixe",desc:"Origem indígena com toques cearenses. Feita com tomate, cebola e pimentões refogados, pimenta de cheiro, leite de coco, azeite de dendê e coentro.",prices:[237.0],portions:["600 g"],all:["gluten","peixe","laticinios"],undeclared:false,foreign:[]},
+{cat:6,name:"Moqueca Cearense Mista",desc:"Origem indígena com toques cearenses. Feita com tomate, cebola e pimentões refogados, pimenta de cheiro, leite de coco, azeite de dendê e coentro.",prices:[233.0],portions:["400 g"],all:["gluten","peixe","crustaceos"],undeclared:false,foreign:[]},
+{cat:6,name:"Peixada Cearense",desc:"Ensopado de filé de peixe, tomate, cebola, coentro, pimentões, leite de coco, batatas, cenouras, repolho e ovos cozidos. Acompanha pirão e arroz branco.",prices:[237.0],portions:["600 g"],all:["gluten","peixe"],undeclared:false,foreign:[]},
+{cat:7,name:"Paella Caldosa Coco Bambu",desc:"Arroz caldoso com camarão, lula, polvo, peixe e mexilhão, refogado com pimentões, ervilha, especiarias e leve toque de açafrão. Servida na paellera.",prices:[220.0,327.0],portions:["2 Pessoas · 544 g","4 Pessoas · 1 kg"],all:["gluten","peixe","crustaceos"],undeclared:false,foreign:[]},
+{cat:7,name:"Rede de Pescador com Lagosta",desc:"Lagosta, camarão, mexilhões, peixe e lula grelhados com molho provençal. Acompanha arroz de açafrão com parmesão.",prices:[438.0],portions:["4 Pessoas · 1,6 kg"],all:["gluten","peixe","crustaceos"],undeclared:false,foreign:[{term:"Provençal",lang:"fr-FR",hint:"pro-van-SÁL"}]},
+{cat:7,name:"Rede de Pescador com Polvo",desc:"Polvo, camarão, mexilhões, peixe e lula grelhados com molho provençal. Acompanha arroz de açafrão com parmesão.",prices:[277.0,438.0],portions:["2 Pessoas · 940 g","4 Pessoas · 1,8 kg"],all:["gluten","peixe","crustaceos"],undeclared:false,foreign:[{term:"Provençal",lang:"fr-FR",hint:"pro-van-SÁL"}]},
+{cat:7,name:"Polvo à Provençal",desc:"Polvo refogado ao molho provençal com tomate seco. Acompanha arroz de brócolis e batata ao forno.",prices:[285.0],portions:["400 g"],all:["gluten","laticinios"],undeclared:false,foreign:[{term:"Provençal",lang:"fr-FR",hint:"pro-van-SÁL"}]},
+{cat:7,name:"Arroz de pescador",desc:"Arroz feito com consumê de peixe, camarão, lula, polvo e pescada amarela.",prices:[232.0],portions:["520 g"],all:["crustaceos","gluten"],undeclared:false,foreign:[]},
+{cat:8,name:"Lagosta a Thermidor",desc:"5 caudas de filé de lagosta, flambado no vinho branco, champignons, picada, mostarda e molho bechamel, gratinada com muçarela e parmesão. Acompanha batatas ao vapor com ervas e arroz com passas.",prices:[300.0],portions:["570 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[{term:"Thermidor",lang:"fr-FR",hint:"ter-mi-DÓR"},{term:"Bechamel",lang:"fr-FR",hint:"be-cha-MÉL"}]},
+{cat:8,name:"Lagosta Grelhada",desc:"Lagosta grelhada, alcaparras e salsinha. Acompanha arroz de alho poró e batatas ao vapor.",prices:[276.0],portions:["454 g"],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:8,name:"Lagosta com Arroz dos Mares",desc:"400g de lagosta grelhada, salpicadas com alho frito na manteiga. Servida sobre mistura de arroz com nata, molho de tomate fresco, leite de coco, mix de pimentões, cebola e coentro.",prices:[270.0],portions:["400 g"],all:[],undeclared:true,foreign:[]},
+{cat:8,name:"Lagosta Imperial",desc:"Lagosta inteira grelhada, envolvida em molho thermidor à base de mostarda e gratinada com muçarela e parmesão. Acompanha risoto de limão siciliano e batata chips.",prices:[170.0],portions:[""],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[{term:"Thermidor",lang:"fr-FR",hint:"ter-mi-DÓR"}]},
+{cat:8,name:"Lagosta Coco Bambu",desc:"Duas lagostas inteiras grelhadas. Acompanha risoto de limão siciliano, batata ao forno e manteiga de ervas especiais.",prices:[330.0],portions:[""],all:["gluten","crustaceos","laticinios"],undeclared:false,foreign:[]},
+{cat:9,name:"Filé à Paulista",desc:"Filé mignon coberto com alhos fritos. Acompanha batatas recheadas e arroz biro-biro com batata palha, ovos, bacon, cebola picada, salsinha, cheiro verde e farofa.",prices:[145.0,287.0],portions:["250 g","500 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:9,name:"Filé à Parmegiana",desc:"Filé mignon à milanesa envolto em molho caseiro de tomate fresco e gratinado com muçarela e parmesão. Servido com espaguete no próprio molho ou com arroz branco e batatas fritas.",prices:[198.0,304.0],portions:["200 g","400 g"],all:["gluten","laticinios"],undeclared:false,foreign:[{term:"Parmegiana",lang:"it-IT",hint:"par-me-JÁ-na"}]},
+{cat:9,name:"Filé com Ervas",desc:"Medalhões de filé mignon grelhados, cobertos com nata de ervas. Acompanha arroz à piemontese gratinado e batatas recheadas.",prices:[141.0,255.0],portions:["250 g","500 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:9,name:"Filé ao Molho Madeira",desc:"Medalhões de filé grelhados envolvidos com bacon, flambados com conhaque, molho madeira tradicional e champignons. Acompanha arroz branco e batata recheada.",prices:[130.0,228.0],portions:["200 g","400 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:9,name:"Filé Alfredo",desc:"Medalhões de filé mignon envolvidos com bacon com molho funghi, acompanhado de fettuccine com molho Alfredo preparado com creme de leite fresco.",prices:[179.0,279.0],portions:["400 g","200 g"],all:["gluten","laticinios"],undeclared:false,foreign:[{term:"Fettuccine",lang:"it-IT",hint:"fe-tu-CHÍ-ni"},{term:"Funghi",lang:"it-IT",hint:"FÚN-gui"},{term:"Alfredo",lang:"it-IT",hint:"al-FRÉ-do"}]},
+{cat:9,name:"Picadinho de Filé Coco Bambu",desc:"Filé mignon picado, refogado com cebola e alho, flambado e acrescido de vinho tinto e molho roti especial da casa. Coberto com ovos pochê. Acompanha farofa de banana e arroz branco.",prices:[202.0],portions:["400 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:9,name:"Strogonoff de Filé Mignon",desc:"Picadinho de filé mignon com molho de strogonoff à base de conhaque, creme de leite e cogumelos paris frescos. Salpicado com batata palha e acompanhado de arroz branco.",prices:[190.0],portions:["400 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:9,name:"Picanha Coco Bambu",desc:"Corte preferido dos churrascos, acompanhada de vinagrete, chimichurri, farofa amarela, mandioca cozida e arroz biro biro.",prices:[194.0,325.0],portions:["2 Pessoas · 300 g","3 Pessoas · 600 g"],all:[],undeclared:true,foreign:[]},
+{cat:9,name:"Carne de Sol do Sertão",desc:"Arroz de leite com queijo coalho, coberto com carne de sol desfiada e refogada na manteiga da terra com cebola roxa, nata e coentro. Gratinada com queijo coalho. Acompanha macaxeira frita.",prices:[161.0,220.0],portions:["2 Pessoas · 200 g","4 Pessoas · 400 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:9,name:"Carne de Sol do Maranhão",desc:"Peça inteira de carne de sol de filé mignon. Acompanha baião de dois, farofa de ovos, banana à milanesa, cebola roxa refogada, purê de macaxeira gratinado com queijo coalho e vinagrete.",prices:[268.0,419.0],portions:["2 Pessoas · 450 g","4 Pessoas · 900 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:10,name:"Frango Primavera",desc:"Filé de frango grelhado com estragão. Acompanha legumes grelhados ao vapor e arroz de alho.",prices:[172.0],portions:["400 g"],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:10,name:"Filé de Frango à Parmegiana",desc:"Filé de frango à milanesa envolto em molho caseiro de tomate fresco e gratinado com muçarela e parmesão. Servido com espaguete no próprio molho.",prices:[129.0,199.0],portions:["2 Pessoas · 200 g","4 Pessoas · 400 g"],all:["gluten","laticinios"],undeclared:false,foreign:[{term:"Parmegiana",lang:"it-IT",hint:"par-me-JÁ-na"}]},
+{cat:11,name:"Lasanha de Berinjela",desc:"Berinjelas empanadas envolvidas em molho de tomate fresco. Finalizadas ao forno com muçarela e parmesão.",prices:[109.0],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:11,name:"Espaguete com Vegetais",desc:"Espaguete italiano com brócolis, tomate cereja e caponata de berinjela salteados no azeite, alho, cebola e pimenta do reino.",prices:[63.0],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:11,name:"Risoto de Palmito",desc:"Risoto vegano de palmito com pimenta do reino, azeitonas pretas fatiadas e pimenta biquinho. Decorado com amêndoas laminadas e salsinha.",prices:[62.0],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:12,name:"Kid's Filé",desc:"Filé grelhado, arroz e batatas fritas. Pode trocar a batata frita por purê de batatas ou legumes.",prices:[66.0],portions:["100 g"],all:[],undeclared:true,foreign:[]},
+{cat:12,name:"Kid's Frango",desc:"Filé de frango grelhado, arroz e batatas fritas. Pode trocar a batata frita por purê de batatas ou legumes.",prices:[48.0],portions:["100 g"],all:[],undeclared:true,foreign:[]},
+{cat:12,name:"Kid's Parmegiana",desc:"Filé mignon à milanesa com espaguete e molho de tomate.",prices:[71.0],portions:["100 g"],all:["gluten","laticinios"],undeclared:false,foreign:[{term:"Parmegiana",lang:"it-IT",hint:"par-me-JÁ-na"}]},
+{cat:12,name:"Kid's Pasta",desc:"Espaguete ao molho branco, molho de tomate ou alho e óleo.",prices:[47.0],portions:["200 g"],all:["gluten"],undeclared:false,foreign:[]},
+{cat:12,name:"Kid's Peixe",desc:"Filé de tilápia grelhado, molho pesto, arroz e purê de batata.",prices:[50.0],portions:["100 g"],all:["gluten","peixe"],undeclared:false,foreign:[]},
+{cat:12,name:"Kid's Coco Bambu",desc:"Filé grelhado e cortado em cubos, arroz, batatas fritas, feijão do dia e farofa da casa.",prices:[71.0],portions:["100 g"],all:[],undeclared:true,foreign:[]},
+{cat:12,name:"Kid's Frango Parmegiana",desc:"Frango à milanesa com espaguete e molho de tomates frescos.",prices:[56.0],portions:["100 g"],all:["gluten","peixe"],undeclared:false,foreign:[{term:"Parmegiana",lang:"it-IT",hint:"par-me-JÁ-na"}]},
+{cat:12,name:"Kid's Camarão",desc:"Camarão empanado com panko, arroz branco e purê de batata.",prices:[56.0],portions:["100 g"],all:["laticinios","gluten","crustaceos"],undeclared:false,foreign:[{term:"Panko",lang:"ja-JP",hint:"PÁN-co"}]},
+{cat:13,name:"Torta de Banana Cremosa",desc:"Fatia de torta cremosa recheada e coberta com tirinhas de banana caramelizada. Servida quente com sorvete de creme salpicado com canela em pó.",prices:[33.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Torta de Limão",desc:"Fatia de torta de creme de limão e leite condensado sobre massa de biscoito. Acompanha calda de chocolate.",prices:[35.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Torta Pavê de Chocolate Trufada",desc:"Fatia de torta com camadas de pão de ló de chocolate trufado e creme de chocolate. Coberta com trufa cremosa e bolinhas de chocolate crocante.",prices:[34.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Blondie de Pistache Individual",desc:"Receita de brownie com chocolate branco e pistache. Acompanha sorvete de pistache.",prices:[35.0],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:13,name:"Cocada ao Forno com Sorvete (1 bola)",desc:"Elaborada com coco ralado fresco e leite condensado. Dourada ao forno, servida quente com uma bola de sorvete de creme.",prices:[42.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Cocada ao Forno",desc:"Elaborada com coco ralado fresco e leite condensado. Dourada ao forno e servida quente.",prices:[34.0],portions:[""],all:["laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Pudim de Leite \"O Melhor do Mundo\"",desc:"Pudim com doce caseiro de ameixas pretas em calda.",prices:[34.0],portions:[""],all:["laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Brigadeiro de Colher",desc:"Brigadeiro cremoso servido na taça. Coberto com bolinhas crocantes.",prices:[33.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Petit Gateau de Chocolate",desc:"Bolinho quente de chocolate. Acompanha sorvete de creme.",prices:[46.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Petit Gateau de Doce de Leite",desc:"Bolinho quente de doce de leite. Acompanha sorvete de creme.",prices:[46.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Churros com Doce de Leite Argentino",desc:"Churros com doce de leite argentino e raspas de limão siciliano.",prices:[42.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Mousse de Chocolate",desc:"Legítima receita italiana.",prices:[29.0],portions:[""],all:["laticinios"],undeclared:false,foreign:[]},
+{cat:13,name:"Cocada Mole com Gelato de Coco",desc:"Cocada coberta com gelato de coco e coco ralado.",prices:[42.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[{term:"Gelato",lang:"it-IT",hint:"je-LÁ-to"}]},
+{cat:13,name:"Abacaxi",desc:"Rodela de abacaxi servida com raspas de gelo e limão.",prices:[20.0],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:13,name:"Brownie de Chocolate",desc:"Bolo de chocolate americano com nozes. Coberto com calda de chocolate quente e sorvete de creme.",prices:[37.0],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:14,name:"Gelato de Creme",desc:"Gelato italiano de creme com crocante de castanha. Acompanha calda de chocolate. Fabricação própria Coco Bambu.",prices:[19.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[{term:"Gelato",lang:"it-IT",hint:"je-LÁ-to"}]},
+{cat:14,name:"Gelato de Brigadeiro",desc:"Gelato italiano de brigadeiro. Acompanha calda de chocolate. Fabricação própria Coco Bambu.",prices:[19.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[{term:"Gelato",lang:"it-IT",hint:"je-LÁ-to"}]},
+{cat:14,name:"Gelato de Pistache",desc:"Gelato italiano de pistache com raspas de pistache. Fabricação própria Coco Bambu.",prices:[19.0],portions:[""],all:[],undeclared:true,foreign:[{term:"Gelato",lang:"it-IT",hint:"je-LÁ-to"}]},
+{cat:14,name:"Mix de Gelato 4 Sabores",desc:"Mix de quatro sabores de gelato artesanal em tábua personalizada. Sabores: queijo com goiabada, cookies and cream, doce de leite, creme e brigadeiro.",prices:[59.0],portions:[""],all:[],undeclared:true,foreign:[{term:"Gelato",lang:"it-IT",hint:"je-LÁ-to"}]},
+{cat:15,name:"Torta Pavê Trufada",desc:"Torta pavê trufada inteira.",prices:[147.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:15,name:"O Melhor Pudim do Mundo (Medio)",desc:"Pudim caseiro com ameixas pretas.",prices:[93.0],portions:[""],all:["laticinios"],undeclared:false,foreign:[]},
+{cat:15,name:"Torta de Limão",desc:"Torta de limão inteira.",prices:[133.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:15,name:"Torta de Banana Cremosa",desc:"Torta de banana cremosa inteira.",prices:[127.0],portions:[""],all:["gluten","laticinios"],undeclared:false,foreign:[]},
+{cat:15,name:"Cocada ao Forno",desc:"Coco fresco desfiado assado e leite condensado.",prices:[123.0],portions:[""],all:["laticinios"],undeclared:false,foreign:[]},
+{cat:16,name:"Cheeseburger",desc:"Pão brioche, blend de hambúrguer de 160g, queijo tipo cheddar e molho da casa.",prices:[52.0],portions:["160 g"],all:[],undeclared:true,foreign:[{term:"Cheeseburger",lang:"en-US",hint:"tchís-BÊR-guer"},{term:"Brioche",lang:"fr-FR",hint:"bri-ÓCH"},{term:"Cheddar",lang:"en-US",hint:"TCHÉ-dar"}]},
+{cat:16,name:"Hambúrguer de Salmão Filadélfia",desc:"Hambúrguer de salmão com cream cheese e cebolinha, empanado com farinha especial temperada e molho da casa, servido em pão brioche. Acompanha batata chips.",prices:[66.0],portions:[""],all:[],undeclared:true,foreign:[{term:"Filadélfia",lang:"en-US",hint:"fi-la-DEL-fia"},{term:"Brioche",lang:"fr-FR",hint:"bri-ÓCH"},{term:"Cream Cheese",lang:"en-US",hint:"crím TCHÍZ"}]},
+{cat:16,name:"Sanduiche de Carne de sol",desc:"Carne de sol desfiada e refogada na manteiga da terra e coentro, queijo coalho, vinagrete especial de cebola roxa e molho da casa, em pão brioche.",prices:[37.0],portions:[""],all:[],undeclared:true,foreign:[{term:"Brioche",lang:"fr-FR",hint:"bri-ÓCH"}]},
+{cat:17,name:"Água de Coco",desc:"Água de coco natural.",prices:[14.9,24.9],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Água Mineral",desc:"Água mineral com ou sem gás.",prices:[9.9,9.9],portions:["300 ml","300 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Água San Pellegrino",desc:"Água mineral sem gás San Pellegrino.",prices:[34.6],portions:["250 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Água Panna",desc:"Água mineral Acqua Panna, 500 ml.",prices:[32.5],portions:["250 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Água Perrier",desc:"Garrafa 330ml.",prices:[29.3],portions:["330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Água Mineral Prata",desc:"Água mineral Prata.",prices:[9.9,9.9],portions:["300 ml","300 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Água Tônica",desc:"Água gaseificada com extrato vegetal de quinino.",prices:[9.9,9.9],portions:["350 ml","350 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Coca-Cola KS",desc:"Refrigerante Coca-Cola Original.",prices:[9.9,9.9],portions:["290 ml","290 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Guaraná Antarctica",desc:"Refrigerante Guaraná Antarctica.",prices:[9.9,9.9],portions:["350 ml","350 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Soda Antarctica",desc:"Refrigerante Soda Limonada Antarctica.",prices:[9.9],portions:["350 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"H2OH!",desc:"Bebida levemente gaseificada, zero açúcar, com vitaminas B e suco natural de limão.",prices:[10.0,10.0],portions:["500 ml","500 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Pink Lemonade",desc:"Copo de 410ml.",prices:[20.9],portions:["410 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Soda Italiana",desc:"Sabores: abacaxi, morango, maçã verde, tangerina, limão siciliano, maracujá.",prices:[19.9],portions:["300 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Red Bull",desc:"Energético Red Bull.",prices:[19.8],portions:["250 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Red Bull Tropical",desc:"Red Bull Tropical Edition, manga, abacaxi e laranja.",prices:[19.8],portions:["250 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Café Nespresso Ristretto",desc:"Blend de cafés Arábica encorpado com torra escura, notas de cacau intensas.",prices:[9.9],portions:["50 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Café Nespresso Leggero",desc:"Blend suave de cafés sul-americanos, corpo leve e aveludado, notas de cereais torrados.",prices:[9.9],portions:["50 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Café Nespresso Descafeinado",desc:"Blend de cafés descafeinados da América do Sul com toque de Robusta.",prices:[9.9],portions:["50 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Cappuccino",desc:"Cappuccino tradicional.",prices:[13.6],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Chá - Seleção Twinings",desc:"Consulte sabores disponíveis.",prices:[10.4],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Cappuccino com Borda de Nutella",desc:"Cappuccino com borda de Nutella.",prices:[15.7],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Abacaxi",desc:"Suco de abacaxi.",prices:[15.7,31.3],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Abacaxi c/ Hortelã",desc:"Suco de abacaxi com hortelã.",prices:[15.7,28.2],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Acerola",desc:"Suco de acerola.",prices:[14.9,28.2],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Cajá",desc:"Suco de cajá (fruta da estação).",prices:[16.7,33.4],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Caju",desc:"Suco de caju.",prices:[15.7,31.3],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Cupuaçu",desc:"Suco de cupuaçu.",prices:[15.7,31.3],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Goiaba",desc:"Suco de goiaba.",prices:[15.7,31.3],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Graviola",desc:"Suco de graviola (fruta da estação).",prices:[16.7,33.4],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Laranja",desc:"Suco de laranja.",prices:[15.7,31.3],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Limonada Suíça",desc:"Limonada suíça.",prices:[15.7,31.3],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Manga",desc:"Suco de manga.",prices:[15.7,31.3],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Maracujá",desc:"Suco de maracujá.",prices:[17.8,35.5],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Morango",desc:"Suco de morango.",prices:[20.9,40.8],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Tamarindo",desc:"Suco de tamarindo.",prices:[15.7,31.3],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Suco de Uva Integral Casa Madeira",desc:"Suco de uva integral do Vale dos Vinhedos, sem adição de açúcares, água ou conservantes.",prices:[20.9,28.2],portions:["250 ml","250 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Frutas Vermelhas",desc:"Suco de frutas vermelhas.",prices:[26.2,52.3],portions:["330 ml","330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Wälls Coco Bambu",desc:"Cerveja dourada, sabor limpo de malte com notas frutadas e amargor moderado.",prices:[21.9],portions:["600 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Antarctica Original",desc:"Cerveja tipo Pilsen, sabor suave, leve amargor e aroma de lúpulo.",prices:[21.9],portions:["600 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Spaten",desc:"Cerveja puro malte alemã com sabor marcante e amargor presente.",prices:[21.9],portions:["600 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Stella Artois",desc:"Lager belga com aromas suaves e notas maltadas.",prices:[17.0],portions:["330 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Budweiser",desc:"American Lager de sabor leve, cor clara e aroma discreto.",prices:[14.6],portions:["330 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Corona",desc:"Cerveja tipo Pilsen mexicana, sabor leve, tradicionalmente servida com limão.",prices:[18.6],portions:["355 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Budweiser Zero",desc:"Versão sem álcool da Budweiser.",prices:[14.6],portions:["330 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Chopp Brahma",desc:"Chopp Brahma (tulipa 300ml, caneca 350ml ou 620ml).",prices:[16.7,17.8,28.3],portions:["300 ml","300 ml","350 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Brahma",desc:"Cerveja Brahma, espuma cremosa e persistente, amargor presente.",prices:[13.9,24.9],portions:["355 ml","355 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Stella Artois sem Glúten",desc:"Stella Artois sem glúten.",prices:[24.9],portions:["600 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Corona Zero",desc:"Versão sem álcool da Corona.",prices:[18.6],portions:["355 ml"],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Axé",desc:"Maracujá, pimenta dedo de moça e vodka Absolut.",prices:[37.6],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Honolulu",desc:"Morango, abacaxi, toque de limão, gengibre e vodka Absolut.",prices:[37.6],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Ópera",desc:"Kiwi, uva verde sem caroço, maçã verde, hortelã e vodka Absolut Vanilla.",prices:[39.7],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Sertanejo",desc:"Limão siciliano, lima da pérsia, rapadura e vodka Absolut.",prices:[37.6],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Siciliana",desc:"Morango, limão siciliano e vodka Absolut.",prices:[37.6],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Caipirinha",desc:"Limão, dose dupla de cachaça nacional.",prices:[37.3],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"CaipiCoco",desc:"Coco, dose dupla de vodka nacional.",prices:[41.5],portions:[""],all:["laticinios","alcool"],undeclared:false,foreign:[]},
+{cat:17,name:"CaipiCoco Frozen",desc:"Coco frozen, dose dupla de vodka nacional.",prices:[41.5],portions:[""],all:["laticinios","alcool"],undeclared:false,foreign:[]},
+{cat:17,name:"Caipi Frutas Vermelhas",desc:"Caipirinha de frutas vermelhas (morango, blueberry e framboesa).",prices:[43.6],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"CaipiCaju",desc:"Caju, dose dupla de vodka nacional.",prices:[39.4],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"CaipiKiwi",desc:"Kiwi, dose dupla de vodka nacional.",prices:[39.4],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"CaipiLichia",desc:"Lichia, dose dupla de vodka nacional.",prices:[42.6],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"CaipiMorango",desc:"Morango, dose dupla de vodka nacional.",prices:[39.4],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"CaipiSake Nacional",desc:"Caipirinha de sake nacional.",prices:[34.9],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"CaipiTropical",desc:"Caipirinha tropical.",prices:[39.4],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Love Martini",desc:"Gin Tanqueray, Aperol, limão siciliano, syrup de morango.",prices:[40.8],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Martini",lang:"it-IT",hint:"mar-TÍ-ni"},{term:"Aperol",lang:"it-IT",hint:"a-pe-RÓL"},{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Alexander",desc:"Licor de cacau, Domecq Oro, creme de leite e canela.",prices:[31.4],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Aperol Spritz",desc:"Espumante, Aperol, soda limonada e laranja.",prices:[38.7],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Spritz",lang:"it-IT",hint:"SPRITS"},{term:"Aperol",lang:"it-IT",hint:"a-pe-RÓL"}]},
+{cat:17,name:"Apple Martini",desc:"Vodka, maçã verde, xarope de maçã verde e toque de limão.",prices:[34.5],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Martini",lang:"it-IT",hint:"mar-TÍ-ni"}]},
+{cat:17,name:"Bellini",desc:"Espumante e purê de pêssego.",prices:[35.6],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Bellini",lang:"it-IT",hint:"be-LÍ-ni"}]},
+{cat:17,name:"Bloody Mary",desc:"Suco de tomate, vodka, molho de pimenta, suco de limão, sal e molho inglês.",prices:[38.7],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Blue Martini",desc:"Vodka, limão e Curaçao Blue.",prices:[34.5],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Martini",lang:"it-IT",hint:"mar-TÍ-ni"}]},
+{cat:17,name:"Carajillo",desc:"Licor 43 e café Nespresso Ristretto.",prices:[35.6],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Clericot",desc:"Vinho branco, licor de laranja, conhaque, soda e mix de frutas.",prices:[37.6,102.7],portions:["450 ml","450 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Coquetel de Frutas Sem Álcool",desc:"Coquetel de frutas sem álcool.",prices:[25.0],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Cosmopolitan Coco Bambu",desc:"Vodka, licor de laranja, suco de cranberry e toque de limão.",prices:[38.7],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Cosmopolitan",lang:"en-US",hint:"coz-mo-PÓ-li-tan"}]},
+{cat:17,name:"Cozumel",desc:"Chopp, gelo, suco de limão e borda de sal.",prices:[22.9],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Dry Martini",desc:"Martini, gin e azeitona verde.",prices:[40.8],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Martini",lang:"it-IT",hint:"mar-TÍ-ni"},{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Fitzgerald",desc:"Gin Tanqueray, suco de limão siciliano, syrup e angostura bitters.",prices:[42.9],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Gin Blush",desc:"Gin, água tônica e suco de cranberry.",prices:[37.8],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Gin Citrus",desc:"Gin Tanqueray e Schweppes Citrus.",prices:[37.8],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Gin Tônica Hibisco",desc:"Gin Tanqueray, água tônica e hibisco.",prices:[37.8],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Gin Mule",desc:"Gin Tanqueray, água tônica e espuma de gengibre.",prices:[37.8],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Mule",lang:"en-US",hint:"MIÚL"},{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Gin Siciliano",desc:"Gin Tanqueray, Limoncello e raspas de limão.",prices:[39.9],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Limoncello",lang:"it-IT",hint:"li-mon-CHÉ-lo"},{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Gin Tônica",desc:"Gin, água tônica, limão siciliano e alecrim.",prices:[37.8],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Gin Tonico de Frutas Vermelhas",desc:"Gin, água tônica, morango, mirtilo e framboesa.",prices:[39.9],portions:[""],all:[],undeclared:true,foreign:[{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Kir Royal",desc:"Espumante, licor de cassis e cereja.",prices:[32.4],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Lichia Martini",desc:"Vodka, água de coco, purê de lichia, limão siciliano e lichia.",prices:[36.6],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Martini",lang:"it-IT",hint:"mar-TÍ-ni"}]},
+{cat:17,name:"Manhattan",desc:"Jack Daniel's, vermute rosso e angostura. Decorado com cereja.",prices:[44.0],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Manhattan",lang:"en-US",hint:"man-RRÉ-tan"}]},
+{cat:17,name:"Margarita",desc:"Tequila, licor de laranja e suco de limão.",prices:[38.7],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Margarita",lang:"es-ES",hint:"mar-ga-RI-ta"}]},
+{cat:17,name:"Mojito",desc:"Rum, soda, limão e hortelã.",prices:[34.5],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Mojito",lang:"es-ES",hint:"mo-RRÍ-to"}]},
+{cat:17,name:"Moscow Mule",desc:"Vodka, suco de limão, gengibre e espuma de gengibre.",prices:[36.6],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Moscow Mule",lang:"en-US",hint:"MÓS-cou MIÚL"},{term:"Mule",lang:"en-US",hint:"MIÚL"}]},
+{cat:17,name:"Negroni",desc:"Gin, Campari e vermute rosso. Decorado com casca de laranja.",prices:[42.9],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Negroni",lang:"it-IT",hint:"ne-GRÓ-ni"},{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Passion Martini",desc:"Absolut Citron com maracujá.",prices:[34.5],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Martini",lang:"it-IT",hint:"mar-TÍ-ni"}]},
+{cat:17,name:"Piña Colada",desc:"Suco de abacaxi, leite de coco, rum, creme de leite e leite condensado.",prices:[34.5],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Sangria",desc:"Vinho tinto, licor curaçau fino, soda, suco de laranja, mix de frutas e gelo.",prices:[76.4],portions:["450 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Sex on the Beach",desc:"Vodka, licor de pêssego, groselha e suco de laranja.",prices:[34.5],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Acerola Martini",desc:"Vodka, suco de acerola, licor, sumo de maracujá, limão siciliano, laranja caramelizada e seca.",prices:[33.5],portions:[""],all:[],undeclared:true,foreign:[{term:"Martini",lang:"it-IT",hint:"mar-TÍ-ni"}]},
+{cat:17,name:"Apple Gin Sem Álcool",desc:"Água tônica e xarope Monin de maçã verde.",prices:[29.2],portions:[""],all:[],undeclared:true,foreign:[{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Coquetel de Frutas Com Álcool",desc:"Coquetel de frutas com álcool.",prices:[28.2],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"French Martini",desc:"Suco de abacaxi, licor e vodka.",prices:[33.5],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Martini",lang:"it-IT",hint:"mar-TÍ-ni"}]},
+{cat:17,name:"Gin Caju",desc:"Gin, sumo de caju natural, rodela de caju e água tônica.",prices:[39.9],portions:[""],all:[],undeclared:true,foreign:[{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Gin Frutas Vermelhas Sem Álcool",desc:"Água tônica, infusão de chá de frutas vermelhas e morango.",prices:[29.2],portions:[""],all:[],undeclared:true,foreign:[{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Limoncello Spritz",desc:"Limoncello, espumante, água com gás e limão siciliano.",prices:[48.2],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Spritz",lang:"it-IT",hint:"SPRITS"},{term:"Limoncello",lang:"it-IT",hint:"li-mon-CHÉ-lo"}]},
+{cat:17,name:"Aperol Mule",desc:"Vodka importado, Aperol, limão siciliano e gengibre.",prices:[36.7],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Aperol",lang:"it-IT",hint:"a-pe-RÓL"},{term:"Mule",lang:"en-US",hint:"MIÚL"}]},
+{cat:17,name:"Blue Mojito",desc:"Releitura do mojito clássico com Bacardi, hortelã fresca, limão e Curaçau Blue, finalizado com soda.",prices:[34.5],portions:["380 ml"],all:["alcool"],undeclared:true,foreign:[{term:"Mojito",lang:"es-ES",hint:"mo-RRÍ-to"}]},
+{cat:17,name:"Blue Label (Dose)",desc:"Dose de whisky super premium Blue Label.",prices:[200.5],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Gold Label - 18 anos (Dose)",desc:"Dose de whisky premium Gold Label, 18 anos.",prices:[43.0],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Black Label - 12 anos (Dose)",desc:"Dose de whisky premium Black Label, 12 anos.",prices:[34.6],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Buchanan's - 12 anos (Dose)",desc:"Dose de whisky premium Buchanan's, 12 anos.",prices:[34.6],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Chivas Regal - 12 anos (Dose)",desc:"Dose de whisky premium Chivas Regal, 12 anos.",prices:[32.5],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Grand Old Par - 12 anos (Dose)",desc:"Dose de whisky premium Grand Old Par, 12 anos.",prices:[29.4],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Ballantines 12 anos (dose)",desc:"Dose de whisky Ballantines, 12 anos.",prices:[26.2],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Jack Daniel's - 12 anos (Dose)",desc:"Dose de whisky premium Jack Daniel's, 12 anos.",prices:[34.6],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Red Label - 8 anos (Dose)",desc:"Dose de whisky premium Red Label, 8 anos.",prices:[24.1],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Ballantines (dose)",desc:"Dose de whisky Ballantines.",prices:[22.0],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Vodka Ciroc",desc:"Dose de vodka Ciroc.",prices:[30.4],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Vodka Absolut",desc:"Dose de vodka Absolut.",prices:[24.1],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Vodka Ketel One",desc:"Dose de vodka Ketel One.",prices:[25.2],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Vodka Smirnoff",desc:"Dose de vodka Smirnoff.",prices:[16.8],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Smirnoff Ice",desc:"Long neck 275ml.",prices:[22.9],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Gin Tanqueray (Dose)",desc:"Dose de gin Tanqueray.",prices:[28.1],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Gin",lang:"en-US",hint:"DJIN"}]},
+{cat:17,name:"Dose Rum Malibu",desc:"Dose de rum Malibu.",prices:[17.7],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Rum Bacardi",desc:"Dose de rum Bacardi.",prices:[17.7],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Tequila Ouro ou Prata",desc:"Dose de tequila Jose Cuervo Ouro ou Prata.",prices:[22.0,22.0],portions:["",""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Cachaça Ypióca 160 Anos (Dose)",desc:"Dose de cachaça Ypióca 160 anos.",prices:[18.8],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Cachaça Seleta (Dose)",desc:"Dose de cachaça Seleta.",prices:[12.5],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Cachaça Sagatiba (Dose)",desc:"Dose de cachaça Sagatiba.",prices:[12.5],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Campari (Dose)",desc:"Dose de aperitivo Campari.",prices:[23.0],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Licor Drambuie - Whisky - Escócia",desc:"Dose de digestivo licor Drambuie, whisky, Escócia.",prices:[30.4],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Whisky",lang:"en-US",hint:"UÍS-qui"}]},
+{cat:17,name:"Licor Frangelico - Avelã - Itália",desc:"Dose de digestivo licor Frangelico, avelã, Itália.",prices:[36.7],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Licor 43 - Ervas - Espanha (Dose)",desc:"Dose de digestivo licor 43, ervas, Espanha.",prices:[28.3],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Licor Baileys - Malte e Creme - Irlanda (Dose)",desc:"Dose de digestivo licor Baileys, malte e creme, Irlanda.",prices:[26.2],portions:[""],all:["laticinios","alcool"],undeclared:false,foreign:[]},
+{cat:17,name:"Licor Cointreau - Laranja - Brasil",desc:"Dose de digestivo licor Cointreau, laranja, Brasil.",prices:[27.3],portions:[""],all:[],undeclared:true,foreign:[]},
+{cat:17,name:"Conhaque Fundador - Espanha (Dose)",desc:"Dose de digestivo conhaque Fundador, Espanha.",prices:[25.1],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Conhaque Domecq Oro - Brasil (Dose)",desc:"Dose de digestivo conhaque Domecq Oro, Brasil.",prices:[15.6],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Licor Coco Bambu",desc:"Combinação tropical de vodka e coco, equilíbrio fino de coco fresco, notas suaves de baunilha e toque de doçura.",prices:[93.5],portions:["375 ml"],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Cachaça Coco Bambu (Dose)",desc:"Dose de cachaça Coco Bambu.",prices:[12.5],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+{cat:17,name:"Licor Amarula - Creme (Dose - 65ml)",desc:"Dose de digestivo licor Amarula, creme.",prices:[26.2],portions:["65 ml"],all:["laticinios","alcool"],undeclared:false,foreign:[]},
+{cat:17,name:"Licor Limoncello",desc:"Licor Limoncello.",prices:[24.0],portions:[""],all:["alcool"],undeclared:true,foreign:[{term:"Limoncello",lang:"it-IT",hint:"li-mon-CHÉ-lo"}]},
+{cat:17,name:"Cachaça Coco Bambu (Garrafa)",desc:"Garrafa de cachaça Coco Bambu.",prices:[88.9],portions:[""],all:["alcool"],undeclared:true,foreign:[]},
+];
+
+ITEMS.forEach((it,i)=>{ it.id = "d"+i; if(!it.all) it.all=[]; if(!it.foreign) it.foreign=[]; });
+
+const ALLERGEN_LABELS = {
+  gluten:"Glúten", laticinios:"Laticínios", ovo:"Ovo", crustaceos:"Crustáceos",
+  moluscos:"Moluscos", peixe:"Peixe", castanhas:"Castanhas/Nozes", alcool:"Álcool"
+};
+
+// ---------- persistence ----------
+let srsState = {};     // id -> {box, due}
+let tableNotes = {};   // id -> string
+const DAY = 86400000;
+const BOX_INTERVALS = [0,1,3,7,14,30];
+
+async function loadState(){
+  try{
+    const v = localStorage.getItem('cardapio-srs-state');
+    if(v) srsState = JSON.parse(v);
+  }catch(e){}
+  try{
+    const v2 = localStorage.getItem('cardapio-table-notes');
+    if(v2) tableNotes = JSON.parse(v2);
+  }catch(e){}
+}
+async function saveSrs(){
+  try{ localStorage.setItem('cardapio-srs-state', JSON.stringify(srsState)); }catch(e){}
+}
+async function saveNotes(){
+  try{ localStorage.setItem('cardapio-table-notes', JSON.stringify(tableNotes)); }catch(e){}
+}
+
+function getBox(id){ return (srsState[id] && srsState[id].box) || 0; }
+function getDue(id){ return srsState[id] ? srsState[id].due : 0; }
+function isDue(id){ const d = getDue(id); return !d || d <= Date.now(); }
+function grade(id, hit){
+  let box = getBox(id);
+  box = hit ? Math.min(box+1, 5) : Math.max(box-1, 0);
+  const due = Date.now() + BOX_INTERVALS[box]*DAY;
+  srsState[id] = {box, due};
+  saveSrs();
+  renderStats();
+}
+
+// ---------- rendering ----------
+const catGrid = document.getElementById('cat-grid');
+function renderCategories(filterText){
+  catGrid.innerHTML = '';
+  const ft = (filterText||'').trim().toLowerCase();
+  CATEGORIES.forEach(cat=>{
+    let items = ITEMS.filter(i=>i.cat===cat.id);
+    if(ft){
+      items = items.filter(i => i.name.toLowerCase().includes(ft) || i.desc.toLowerCase().includes(ft) || i.all.some(a=>ALLERGEN_LABELS[a].toLowerCase().includes(ft)));
+      if(items.length===0) return;
+    }
+    const mastered = items.filter(i=>getBox(i.id)>=4).length;
+    const div = document.createElement('div');
+    div.className = 'cat-card';
+    div.innerHTML = `
+      <div class="num">${String(cat.id).padStart(2,'0')}</div>
+      <div class="name">${cat.name}</div>
+      <div class="count">${items.length} itens · ${mastered} dominados</div>
+      <div class="bar"><div style="width:${items.length? (mastered/items.length*100):0}%"></div></div>
+    `;
+    div.onclick = ()=> openStudy(items, cat.name);
+    catGrid.appendChild(div);
+  });
+  if(ft && catGrid.innerHTML==='') catGrid.innerHTML = '<div class="empty-state">Nada encontrado.</div>';
+}
+
+document.getElementById('search-input').addEventListener('input', e=> renderCategories(e.target.value));
+
+// ---------- study / flashcards ----------
+let studyQueue = [];
+let studyIdx = 0;
+let flipped = false;
+
+function openStudy(items, label){
+  studyQueue = items.slice();
+  studyIdx = 0; flipped = false;
+  switchView('study');
+  renderCard();
+}
+
+document.getElementById('btn-due').onclick = ()=>{
+  const due = ITEMS.filter(i=>isDue(i.id));
+  studyQueue = due.length? due : ITEMS.slice();
+  studyIdx = 0; flipped=false; renderCard();
+};
+document.getElementById('btn-all').onclick = ()=>{
+  studyQueue = ITEMS.slice();
+  studyIdx = 0; flipped=false; renderCard();
+};
+
+const studyArea = document.getElementById('study-area');
+
+function renderCard(){
+  if(!studyQueue.length){
+    studyArea.innerHTML = '<div class="empty-state">Escolha uma categoria em "Categorias" ou clique em "Estudar tudo".</div>';
+    return;
+  }
+  const it = studyQueue[studyIdx];
+  const cat = CATEGORIES.find(c=>c.id===it.cat);
+
+  let allergenHtml, allergenFootnote;
+  const declaredCodes = it.all.filter(a=>a!=='alcool');
+  if(it.undeclared){
+    allergenHtml = declaredCodes.length
+      ? declaredCodes.map(a=>`<span class="allergen-chip">${ALLERGEN_LABELS[a]}</span>`).join('')
+      : `<span class="allergen-chip none">Não declarado no cartão</span>`;
+    allergenFootnote = 'A casa não declarou alergênicos para este item no cartão — isso não significa ausência. Confirme sempre com a cozinha.';
+  } else {
+    allergenHtml = declaredCodes.length
+      ? declaredCodes.map(a=>`<span class="allergen-chip">${ALLERGEN_LABELS[a]}</span>`).join('')
+      : `<span class="allergen-chip none">Sem alergênicos declarados pela casa</span>`;
+    allergenFootnote = 'Alergênicos conforme declarado oficialmente pela casa. Em caso de dúvida, confirme na cozinha.';
+  }
+  if(it.all.includes('alcool')){
+    allergenHtml += `<span class="allergen-chip">Contém álcool</span>`;
+  }
+
+  const priceLabel = it.prices.length>1
+    ? `R$ ${Math.min(...it.prices).toFixed(2).replace('.',',')} – R$ ${Math.max(...it.prices).toFixed(2).replace('.',',')}`
+    : `R$ ${(it.prices[0]||0).toFixed(2).replace('.',',')}`;
+
+  const portionRows = it.prices.map((p,pi)=>{
+    const lab = it.portions[pi];
+    const priceTxt = `R$ ${p.toFixed(2).replace('.',',')}`;
+    const fallback = it.prices.length>1 ? 'porção não especificada no cardápio' : 'porção única';
+    return `<div class="portion-row"><span class="portion-label">${lab ? lab : fallback}</span><span class="portion-price">${priceTxt}</span></div>`;
+  }).join('');
+
+  const pronHtml = it.foreign.length ? it.foreign.map((f,fi)=>
+    `<button class="pron-btn" data-term="${encodeURIComponent(f.term)}" data-lang="${f.lang}">🔊 ${f.term} <span style="opacity:.7">(${f.hint})</span></button>`
+  ).join('') : '<span class="allergen-note">Sem termos estrangeiros neste prato.</span>';
+  const note = tableNotes[it.id] || '';
+
+  studyArea.innerHTML = `
+    <div class="card-wrap">
+      <div class="flashcard ${flipped?'flipped':''}" id="flashcard">
+        <div class="face front">
+          <div class="cat-tag">${cat.name}</div>
+          <div class="dish-name">${it.name}</div>
+          <div class="price">${priceLabel}${it.prices.length>1?' <span style="opacity:.6">('+it.prices.length+' porções)</span>':''}</div>
+          <div class="tap-hint">toque para ver a aula</div>
+        </div>
+        <div class="face back">
+          <div class="dish-name-small">${it.name}</div>
+          <div class="desc">${it.desc}</div>
+
+          <div class="row-label">Porção(ões) e preço(s)</div>
+          <div class="portion-block">${portionRows}</div>
+
+          <div class="row-label">Alérgenos (declarados pela casa)</div>
+          <div class="allergen-row">${allergenHtml}</div>
+          <div class="allergen-note">${allergenFootnote}</div>
+
+          <div class="row-label">Pronúncia</div>
+          <div class="pron-row">${pronHtml}</div>
+
+          <div class="row-label">Montagem de mesa (você preenche)</div>
+          <div class="table-note">
+            <textarea placeholder="Ex: guardanapo + garfo e faca grande, +1 colher de servir…">${note}</textarea>
+          </div>
+
+          <div class="grade-row">
+            <button class="grade-btn miss">Ainda não sei</button>
+            <button class="grade-btn hit">Já sei bem</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-arrows sans">
+      <button id="prev-card">← Anterior</button>
+      <span style="color:var(--ink-dim); font-size:12px;">${studyIdx+1} / ${studyQueue.length}</span>
+      <button id="next-card">Próximo →</button>
+    </div>
+  `;
+
+  const flashcardEl = document.getElementById('flashcard');
+  flashcardEl.querySelector('.face.front').onclick = ()=>{ flipped=true; flashcardEl.classList.add('flipped'); };
+  flashcardEl.querySelector('.face.back .dish-name-small').onclick = ()=>{ flipped=false; flashcardEl.classList.remove('flipped'); };
+
+  studyArea.querySelectorAll('.pron-btn').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      const term = decodeURIComponent(btn.dataset.term);
+      const lang = btn.dataset.lang;
+      speak(term, lang);
+    };
+  });
+
+  const textarea = studyArea.querySelector('textarea');
+  textarea.addEventListener('click', e=>e.stopPropagation());
+  textarea.addEventListener('input', e=>{
+    tableNotes[it.id] = e.target.value;
+    saveNotes();
+  });
+
+  studyArea.querySelector('.grade-btn.miss').onclick = (e)=>{ e.stopPropagation(); grade(it.id,false); nextCard(); };
+  studyArea.querySelector('.grade-btn.hit').onclick = (e)=>{ e.stopPropagation(); grade(it.id,true); nextCard(); };
+
+  document.getElementById('prev-card').onclick = ()=>{ studyIdx = (studyIdx-1+studyQueue.length)%studyQueue.length; flipped=false; renderCard(); };
+  document.getElementById('next-card').onclick = nextCard;
+}
+function nextCard(){ studyIdx = (studyIdx+1)%studyQueue.length; flipped=false; renderCard(); }
+
+function speak(term, lang){
+  if(!('speechSynthesis' in window)){ return; }
+  const u = new SpeechSynthesisUtterance(term);
+  u.lang = lang || 'pt-BR';
+  u.rate = 0.85;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+// ---------- quiz / simulation mode ----------
+const quizArea = document.getElementById('quiz-area');
+function allergenAnswer(it, code, label){
+  if(it.all.includes(code)) return `A casa declara ${label} nesse item — avise o cliente antes de recomendar. (${it.name}: ${it.desc})`;
+  if(it.undeclared) return `A casa não declarou alergênicos para esse item no cartão — não é garantia de ausência de ${label}. Confirme direto com a cozinha antes de responder ao cliente.`;
+  return `A casa declara alergênicos para esse item, e ${label} não está entre eles — mas sempre reconfirme com a cozinha se o cliente tiver uma restrição séria.`;
+}
+const SCENARIO_TEMPLATES = [
+  it => ({q:`Um cliente pergunta: "O que vem no ${it.name}?" O que você responde?`, a: it.desc}),
+  it => ({q:`Cliente com intolerância a glúten pergunta se pode pedir "${it.name}". O que você diz?`, a: allergenAnswer(it,'gluten','glúten')}),
+  it => ({q:`Cliente com intolerância a lactose pergunta sobre o "${it.name}". O que você diz?`, a: allergenAnswer(it,'laticinios','laticínios/lactose')}),
+  it => ({q:`Cliente alérgico a crustáceos pergunta se pode comer o "${it.name}". O que você diz?`, a: allergenAnswer(it,'crustaceos','crustáceos')}),
+  it => ({q:`Um cliente pede uma sugestão de bebida ou harmonização para o "${it.name}". Antes de responder, o que você precisa lembrar sobre esse prato?`, a: it.desc}),
+];
+
+function newQuiz(){
+  const it = ITEMS[Math.floor(Math.random()*ITEMS.length)];
+  const tpl = SCENARIO_TEMPLATES[Math.floor(Math.random()*SCENARIO_TEMPLATES.length)];
+  const {q,a} = tpl(it);
+  quizArea.innerHTML = `
+    <div class="quiz-box">
+      <h3>Simulação de atendimento</h3>
+      <div class="scenario">${q}</div>
+      <button class="mode-btn primary" id="reveal-btn" style="width:100%;">Mostrar resposta correta</button>
+      <div class="quiz-feedback hidden" id="quiz-feedback"></div>
+      <button class="next-q hidden" id="next-quiz">Próxima simulação</button>
+    </div>
+  `;
+  document.getElementById('reveal-btn').onclick = ()=>{
+    const fb = document.getElementById('quiz-feedback');
+    fb.textContent = a;
+    fb.classList.remove('hidden');
+    document.getElementById('reveal-btn').classList.add('hidden');
+    document.getElementById('next-quiz').classList.remove('hidden');
+  };
+  document.getElementById('next-quiz').onclick = newQuiz;
+}
+
+// ---------- tabs / view switching ----------
+function switchView(view){
+  document.getElementById('view-home').classList.toggle('hidden', view!=='home');
+  document.getElementById('view-study').classList.toggle('hidden', view!=='study');
+  document.getElementById('view-quiz').classList.toggle('hidden', view!=='quiz');
+  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.view===view));
+  if(view==='quiz') newQuiz();
+  if(view==='study' && !studyQueue.length) studyArea.innerHTML = '<div class="empty-state">Escolha uma categoria em "Categorias" ou clique em "Estudar tudo".</div>';
+}
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('.tab-btn');
+  if(!btn) return;
+  switchView(btn.dataset.view);
+});
+
+// ---------- stats ----------
+function renderStats(){
+  document.getElementById('stat-total').textContent = ITEMS.length;
+  document.getElementById('stat-mastered').textContent = ITEMS.filter(i=>getBox(i.id)>=4).length;
+  const dueCount = ITEMS.filter(i=>isDue(i.id) && srsState[i.id]).length;
+  document.getElementById('stat-due').textContent = dueCount;
+  document.getElementById('due-count').textContent = ITEMS.filter(i=>isDue(i.id)).length;
+}
+
+// ---------- init ----------
+(async function init(){
+  await loadState();
+  renderCategories();
+  renderStats();
+})();
+
+})();
+</script>
+</body>
+</html>
