@@ -236,16 +236,22 @@
 <main>
 
   <section id="view-home">
-    <div class="search-row">
-      <input type="text" id="search-input" placeholder="Buscar prato (ex: camarão, bacalhau, glúten)…" />
+    <div id="cat-grid-panel">
+      <div class="search-row">
+        <input type="text" id="search-input" placeholder="Buscar prato (ex: camarão, bacalhau, glúten)…" />
+      </div>
+      <div class="cat-grid" id="cat-grid"></div>
     </div>
-    <div class="cat-grid" id="cat-grid"></div>
+    <div id="cat-study-panel" class="hidden">
+      <button class="mode-btn" id="btn-back-categories" style="margin-bottom:12px;">← Voltar às categorias</button>
+      <div id="cat-study-area"></div>
+    </div>
   </section>
 
   <section id="view-study" class="hidden">
     <div class="mode-row">
       <button class="mode-btn primary" id="btn-due">Revisar pendentes (<span id="due-count">0</span>)</button>
-      <button class="mode-btn" id="btn-all">Estudar tudo</button>
+      <button class="mode-btn" id="btn-all">Revisar tudo que já estudei</button>
     </div>
     <div id="study-area"></div>
   </section>
@@ -719,7 +725,7 @@ function renderCategories(filterText){
       <div class="count">${items.length} itens · ${mastered} dominados</div>
       <div class="bar"><div style="width:${items.length? (mastered/items.length*100):0}%"></div></div>
     `;
-    div.onclick = ()=> openStudy(items, cat.name);
+    div.onclick = ()=> openCategoryStudy(items, cat.name);
     catGrid.appendChild(div);
   });
   if(ft && catGrid.innerHTML==='') catGrid.innerHTML = '<div class="empty-state">Nada encontrado.</div>';
@@ -727,36 +733,46 @@ function renderCategories(filterText){
 
 document.getElementById('search-input').addEventListener('input', e=> renderCategories(e.target.value));
 
-// ---------- study / flashcards ----------
-let studyQueue = [];
-let studyIdx = 0;
-let flipped = false;
+// ---------- study / flashcards (two independent decks: category browsing vs. spaced review) ----------
+const catState = { queue: [], idx: 0, flipped: false, area: null };
+const reviewState = { queue: [], idx: 0, flipped: false, area: null };
+catState.area = document.getElementById('cat-study-area');
+reviewState.area = document.getElementById('study-area');
 
-function openStudy(items, label){
-  studyQueue = items.slice();
-  studyIdx = 0; flipped = false;
-  switchView('study');
-  renderCard();
+function openCategoryStudy(items, label){
+  catState.queue = items.slice();
+  catState.idx = 0; catState.flipped = false;
+  document.getElementById('cat-grid-panel').classList.add('hidden');
+  document.getElementById('cat-study-panel').classList.remove('hidden');
+  renderCard(catState);
 }
+document.getElementById('btn-back-categories').onclick = ()=>{
+  document.getElementById('cat-study-panel').classList.add('hidden');
+  document.getElementById('cat-grid-panel').classList.remove('hidden');
+  renderCategories(document.getElementById('search-input').value);
+};
 
 document.getElementById('btn-due').onclick = ()=>{
-  const due = ITEMS.filter(i=>isDue(i.id));
-  studyQueue = due.length? due : ITEMS.slice();
-  studyIdx = 0; flipped=false; renderCard();
+  const due = ITEMS.filter(i=>isDue(i.id) && srsState[i.id]);
+  reviewState.queue = due;
+  reviewState.idx = 0; reviewState.flipped=false; renderCard(reviewState);
 };
 document.getElementById('btn-all').onclick = ()=>{
-  studyQueue = ITEMS.slice();
-  studyIdx = 0; flipped=false; renderCard();
+  const studied = ITEMS.filter(i=>srsState[i.id]);
+  reviewState.queue = studied;
+  reviewState.idx = 0; reviewState.flipped=false; renderCard(reviewState);
 };
 
-const studyArea = document.getElementById('study-area');
-
-function renderCard(){
-  if(!studyQueue.length){
-    studyArea.innerHTML = '<div class="empty-state">Escolha uma categoria em "Categorias" ou clique em "Estudar tudo".</div>';
+function renderCard(state){
+  const studyArea = state.area;
+  if(!state.queue.length){
+    const emptyMsg = state===reviewState
+      ? 'Nenhum prato pra revisar ainda. Estude alguns pratos na aba "Categorias" primeiro — quando você marcar "Já sei bem" ou "Ainda não sei" num prato, ele entra aqui pra revisão espaçada.'
+      : 'Nenhum prato encontrado.';
+    studyArea.innerHTML = `<div class="empty-state">${emptyMsg}</div>`;
     return;
   }
-  const it = studyQueue[studyIdx];
+  const it = state.queue[state.idx];
   const cat = CATEGORIES.find(c=>c.id===it.cat);
 
   let allergenHtml, allergenFootnote;
@@ -794,7 +810,7 @@ function renderCard(){
 
   studyArea.innerHTML = `
     <div class="card-wrap">
-      <div class="flashcard ${flipped?'flipped':''}" id="flashcard">
+      <div class="flashcard ${state.flipped?'flipped':''}" id="flashcard-${state===catState?'cat':'rev'}">
         <div class="face front">
           <div class="cat-tag">${cat.name}</div>
           <div class="dish-name">${it.name}</div>
@@ -828,15 +844,15 @@ function renderCard(){
       </div>
     </div>
     <div class="nav-arrows sans">
-      <button id="prev-card">← Anterior</button>
-      <span style="color:var(--ink-dim); font-size:12px;">${studyIdx+1} / ${studyQueue.length}</span>
-      <button id="next-card">Próximo →</button>
+      <button class="prev-card">← Anterior</button>
+      <span style="color:var(--ink-dim); font-size:12px;">${state.idx+1} / ${state.queue.length}</span>
+      <button class="next-card">Próximo →</button>
     </div>
   `;
 
-  const flashcardEl = document.getElementById('flashcard');
-  flashcardEl.querySelector('.face.front').onclick = ()=>{ flipped=true; flashcardEl.classList.add('flipped'); };
-  flashcardEl.querySelector('.face.back .dish-name-small').onclick = ()=>{ flipped=false; flashcardEl.classList.remove('flipped'); };
+  const flashcardEl = studyArea.querySelector('.flashcard');
+  flashcardEl.querySelector('.face.front').onclick = ()=>{ state.flipped=true; flashcardEl.classList.add('flipped'); };
+  flashcardEl.querySelector('.face.back .dish-name-small').onclick = ()=>{ state.flipped=false; flashcardEl.classList.remove('flipped'); };
 
   studyArea.querySelectorAll('.pron-btn').forEach(btn=>{
     btn.onclick = (e)=>{
@@ -854,13 +870,17 @@ function renderCard(){
     saveNotes();
   });
 
-  studyArea.querySelector('.grade-btn.miss').onclick = (e)=>{ e.stopPropagation(); grade(it.id,false); nextCard(); };
-  studyArea.querySelector('.grade-btn.hit').onclick = (e)=>{ e.stopPropagation(); grade(it.id,true); nextCard(); };
+  studyArea.querySelector('.grade-btn.miss').onclick = (e)=>{ e.stopPropagation(); grade(it.id,false); nextCard(state); };
+  studyArea.querySelector('.grade-btn.hit').onclick = (e)=>{ e.stopPropagation(); grade(it.id,true); nextCard(state); };
 
-  document.getElementById('prev-card').onclick = ()=>{ studyIdx = (studyIdx-1+studyQueue.length)%studyQueue.length; flipped=false; renderCard(); };
-  document.getElementById('next-card').onclick = nextCard;
+  studyArea.querySelector('.prev-card').onclick = ()=>{ state.idx = (state.idx-1+state.queue.length)%state.queue.length; state.flipped=false; renderCard(state); };
+  studyArea.querySelector('.next-card').onclick = ()=>nextCard(state);
 }
-function nextCard(){ studyIdx = (studyIdx+1)%studyQueue.length; flipped=false; renderCard(); }
+function nextCard(state){
+  state.idx = (state.idx+1)%state.queue.length; state.flipped=false;
+  renderCard(state);
+  if(state===catState) renderCategories(document.getElementById('search-input').value);
+}
 
 function speak(term, lang){
   if(!('speechSynthesis' in window)){ return; }
@@ -916,7 +936,13 @@ function switchView(view){
   document.getElementById('view-quiz').classList.toggle('hidden', view!=='quiz');
   document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.view===view));
   if(view==='quiz') newQuiz();
-  if(view==='study' && !studyQueue.length) studyArea.innerHTML = '<div class="empty-state">Escolha uma categoria em "Categorias" ou clique em "Estudar tudo".</div>';
+  if(view==='study'){
+    if(!reviewState.queue.length){
+      reviewState.queue = ITEMS.filter(i=>isDue(i.id) && srsState[i.id]);
+      reviewState.idx = 0; reviewState.flipped = false;
+    }
+    renderCard(reviewState);
+  }
 }
 document.getElementById('tabs').addEventListener('click', e=>{
   const btn = e.target.closest('.tab-btn');
